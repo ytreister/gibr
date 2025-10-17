@@ -1,2 +1,2 @@
 # gibr
-A Git CLI tool for intelligently creating branch names
+A Git CLI tool for predictably creating branch names

@@ -1,0 +1,57 @@
+[project]
+name = "gibr"
+dynamic = [
+    "version"
+]
+authors = [
+  { name="Yair Treister", email="ytreister@gmail.com" },
+]
+description = "A Git CLI tool for intelligently creating branch names"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "GitPython==3.1.43",
+    "PyGithub==2.8.1",
+    "click==8.3.0"
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Version Control :: Git",
+    "License :: Other/Proprietary License",
+    "Operating System :: OS Independent",
+]
+
+[project.scripts]
+gibr = 'gibr.cli:app'
+
+[project.urls]
+Homepage = "https://github.com/ytreister/gibr"
+Issues = "https://github.com/ytreister/gibr/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/gibr"]
+
+[tool.hatch.version]
+path = "__about__.py"
+
+[tool.hatch.build]
+exclude = ["venv"]
+
+[tool.pytest.ini_options]
+pythonpath = [
+    "src"
+]
+addopts = "-v --color=yes --cov-fail-under=25 --cov=. --cov-report term-missing --cov-report html"
+
+[tool.ruff.lint]
+select = ["F", "E", "W", "I", "N", "D", "UP", "PLR"]
+ignore = ["D213", "D203"]
+
+[tool.coverage.run]
+omit = [
+    "tests/*"
+]
