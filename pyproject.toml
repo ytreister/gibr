@@ -12,7 +12,8 @@ requires-python = ">=3.11"
 dependencies = [
     "GitPython==3.1.43",
     "PyGithub==2.8.1",
-    "click==8.3.0"
+    "click==8.3.0",
+    "python-slugify>=8.0.4",
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
