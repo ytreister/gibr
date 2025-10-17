@@ -1,14 +1,13 @@
 [project]
 name = "gibr"
-dynamic = [
-    "version"
-]
+version = "0.1.0"
 authors = [
   { name="Yair Treister", email="ytreister@gmail.com" },
 ]
 description = "A Git CLI tool for intelligently creating branch names"
 readme = "README.md"
 requires-python = ">=3.11"
+keywords = ["git", "cli", "automation", "github", "gitlab", "jira"]
 dependencies = [
     "GitPython==3.1.43",
     "PyGithub==2.8.1",
@@ -27,6 +26,7 @@ gibr = 'gibr.cli:app'
 
 [project.urls]
 Homepage = "https://github.com/ytreister/gibr"
+Repository = "https://github.com/ytreister/gibr"
 Issues = "https://github.com/ytreister/gibr/issues"
 
 [build-system]
