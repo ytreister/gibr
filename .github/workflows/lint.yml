@@ -1,0 +1,14 @@
+name: Ruff Lint
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  ruff:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/astral-sh/ruff:latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: ruff check .
