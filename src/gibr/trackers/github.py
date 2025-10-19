@@ -1,6 +1,5 @@
 """GitHub issue tracker implementation."""
 
-import click
 from github import Github
 from github.GithubException import UnknownObjectException
 
