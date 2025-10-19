@@ -37,7 +37,11 @@ class JiraTracker(IssueTracker):
 
     def list_issues(self) -> list[dict]:
         """List open issues in the Jira project."""
-        jql = f'project="{self.project_key}" AND statusCategory != Done ORDER BY created DESC'
+        jql = (
+            f'project = "{self.project_key}" '
+            "AND statusCategory != Done "
+            "ORDER BY created DESC"
+        )
         try:
             issues = self.client.search_issues(jql, maxResults=50)
         except JIRAError as e:
