@@ -1,6 +1,5 @@
 """GitHub issue tracker implementation."""
 
-import click
 from github import Github
 from github.GithubException import UnknownObjectException
 
@@ -23,9 +22,7 @@ class GithubTracker(IssueTracker):
         try:
             issue = self.repo.get_issue(number=int(issue_id))
         except UnknownObjectException:
-            raise click.ClickException(
-                error(f"Issue #{issue_id} not found in repository.")
-            )
+            error(f"Issue #{issue_id} not found in repository.")
         return Issue(
             id=issue.number,
             title=issue.title,
