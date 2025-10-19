@@ -1,6 +1,7 @@
 """Factory for issue trackers."""
 
 from .github import GithubTracker
+from .jira import JiraTracker
 
 
 def get_tracker(config):
@@ -20,5 +21,18 @@ def get_tracker(config):
         except KeyError as e:
             raise ValueError(f"Missing key in 'github' config: {e.args[0]}")
         return GithubTracker(repo=repo, token=token)
+    elif tracker_type == "jira":
+        try:
+            jira_config = config["jira"]
+        except KeyError:
+            raise ValueError("Missing 'jira' config.")
+        try:
+            url = jira_config["url"]
+            user = jira_config["user"]
+            token = jira_config["token"]
+            project_key = jira_config["project_key"]
+        except KeyError as e:
+            raise ValueError(f"Missing key in 'jira' config: {e.args[0]}")
+        return JiraTracker(url=url, token=token, user=user, project_key=project_key)
     else:
         raise ValueError(f"Unsupported tracker type: {tracker_type}")

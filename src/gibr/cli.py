@@ -5,12 +5,13 @@ import os
 
 import click
 from git.config import GitConfigParser
+from tabulate import tabulate
 
 from gibr.branch import BranchName
 from gibr.config import GibrConfig
 from gibr.git import create_and_push_branch
 from gibr.logger import configure_logger
-from gibr.notify import party, success
+from gibr.notify import party, success, warning
 from gibr.trackers.factory import get_tracker
 
 
@@ -77,8 +78,12 @@ def issues(ctx):
     """List open issues from the tracker."""
     tracker = ctx.obj["tracker"]
     issues = tracker.list_issues()
-    for issue in issues:
-        click.echo(f"#{issue.id} — {issue.title}")
+    if not issues:
+        warning("No open issues found.")
+        return
+    table = [[issue.id, issue.type, issue.title] for issue in issues]
+
+    click.echo(tabulate(table, headers=["Issue", "Type", "Title"], tablefmt="github"))
 
 
 @cli.command("alias")
