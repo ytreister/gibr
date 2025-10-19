@@ -5,12 +5,12 @@ on:
   pull_request:
 
 jobs:
-  pytest:
+  test:
     runs-on: ubuntu-latest
-    container:
-      image: pytestdev/pytest:latest
     steps:
       - uses: actions/checkout@v4
-      - run: pip install uv
-      - run: uv pip install ".[dev]"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install .[dev]
       - run: pytest
