@@ -8,26 +8,67 @@ creates + pushes the branch to `origin`.
 ```bash
 pip install gibr
 ```
-### Usage
+### Usage (primary use case)
+Issue #123 "Add support for OAuth2 / login (beta)"
 ```bash
-gibr 123
+$ gibr 123
+Generating branch name for issue #123: Add support for OAuth2 / login (beta)
+Branch name: issue/123/add-support-for-oauth2-login-beta
+✅  Created branch 'issue/123/add-support-for-oauth2-login-beta' from main.
+✅  Checked out branch: issue/123/add-support-for-oauth2-login-beta
+✅  Pushed branch 'issue/123/add-support-for-oauth2-login-beta' to origin.
+```
+ 
+## Listing issues with `gibr issues`
+
+You can list open issues from your configured tracker with:
+
+```bash
+gibr issues
 ```
 
-The command above will:
-1. Load `.gibrconfig` from the current directory or a parent directory.
-2. Use the configured issue tracker to fetch issue `#123`.
-3. Generate a branch name using the `DEFAULT.branch_name_format` (see config example).
-4. Create the branch locally and push it to `origin`.
+This prints a short list of matching/open issues (id, title, type) so you can
+pick which issue to use when creating a branch.
 
-## Verbose logging
+## Adding convenient Git aliases with `gibr alias`
 
-Add `--verbose` to any command to enable debug-level logging:
+`gibr` includes a built-in helper that writes git aliases into your global
+`~/.gitconfig` for you. Run:
 
 ```bash
-gibr 123 --verbose
-# or
-gibr --verbose 123
+gibr alias
 ```
+
+This adds aliases such as `git create` so that instead of using the gibr CLI directly, you can use an extended version of git:
+
+```bash
+git create 123
+```
+
+The above command is equivalent to using the CLI as follows: `gibr 123` or
+`gibr create 123`.
+
+
+### Flag order
+
+Short rule:
+
+```bash
+# ✅ gibr CLI (flags before)
+gibr --verbose create 123
+
+# ✅ git alias (flags after)
+git create 123 --verbose
+
+# ❌ wrong: flags after gibr CLI
+gibr create 123 --verbose 
+
+# ❌ wrong: flags before the alias
+git --verbose create 123
+```
+
+## Optional flags
+- `--verbose` — enable debug-level logging for a command
 
 ## Configuration (`.gibrconfig`)
 
