@@ -7,11 +7,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    container:
+      image: python:3.12-slim
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - run: pip install uv
-      - run: uv pip install -e ".[dev]"
+      - run: pip install .[dev]
       - run: pytest
