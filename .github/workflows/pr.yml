@@ -2,12 +2,18 @@ name: AI PR Description
 
 on:
   workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Pull request number to reprocess'
+        required: true
   pull_request_target:
     types: [opened]
 
 jobs:
   generate-description:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - name: Generate PR description
         uses: Codium-ai/pr-agent@main
