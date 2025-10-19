@@ -23,9 +23,9 @@ def test_get_tracker_github(mock_github_tracker):
 
 def test_get_tracker_unsupported_type():
     """Test that get_tracker raises ValueError for unsupported tracker types."""
-    config = {"issue-tracker": {"name": "jira"}}
+    config = {"issue-tracker": {"name": "gitlab"}}
 
-    with pytest.raises(ValueError, match="Unsupported tracker type: jira"):
+    with pytest.raises(ValueError, match="Unsupported tracker type: gitlab"):
         get_tracker(config)
 
 
