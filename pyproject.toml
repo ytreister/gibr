@@ -52,13 +52,19 @@ explicit = true
 pythonpath = [
     "src"
 ]
-addopts = "-v --color=yes --cov-fail-under=25 --cov=. --cov-report term-missing --cov-report html"
+addopts = "-v --color=yes --cov-fail-under=25 --cov=. --cov-report term-missing --cov-report html --cov-report xml"
 
 [tool.ruff.lint]
 select = ["F", "E", "W", "I", "N", "D", "UP", "PLR"]
-ignore = ["D213", "D203"]
+ignore = ["D213", "D203", "D104"]
 
 [tool.coverage.run]
 omit = [
     "tests/*"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.4.2",
+    "pytest-cov>=7.0.0",
 ]

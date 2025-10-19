@@ -1,4 +1,4 @@
-"""Error classes for Gibr."""
+"""Utility functions for displaying notifications in the CLI using Click."""
 
 import click
 
