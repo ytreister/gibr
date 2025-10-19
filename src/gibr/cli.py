@@ -12,10 +12,10 @@ from gibr.trackers.factory import get_tracker
 
 
 class GibrGroup(click.Group):
-    """Custom Click group that treats 'gibr <issue_number>' like 'gibr create <issue_number>'."""
+    """Custom Click group."""
 
     def parse_args(self, ctx, args):
-        """Preprocess args to handle 'gibr <issue_number>' as 'gibr create <issue_number>'."""
+        """Preprocess args to handle 'gibr 123' as 'gibr create 123'."""
         for i, arg in enumerate(args):
             if not arg.startswith("--"):
                 if arg.isdigit() and arg not in self.commands:

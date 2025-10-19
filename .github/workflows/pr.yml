@@ -8,9 +8,8 @@ on:
 jobs:
   generate-description:
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
     steps:
-      - uses: coderabbitai/ai-pr-description@v1
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Generate PR description
+        uses: Codium-ai/pr-agent@v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
