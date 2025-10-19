@@ -1,5 +1,11 @@
 [![Tests](https://github.com/ytreister/gibr/actions/workflows/test.yml/badge.svg)](https://github.com/ytreister/gibr/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/ytreister/gibr/branch/main/graph/badge.svg)](https://codecov.io/gh/ytreister/gibr)
+[![PyPI version](https://img.shields.io/pypi/v/gibr.svg)](https://pypi.org/project/gibr/)
+[![Python versions](https://img.shields.io/pypi/pyversions/gibr.svg)](https://pypi.org/project/gibr/)
+[![License](https://img.shields.io/github/license/ytreister/gibr.svg)](https://github.com/ytreister/gibr/blob/main/LICENSE)
+[![GitHub issues](https://img.shields.io/github/issues/ytreister/gibr.svg)](https://github.com/ytreister/gibr/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/ytreister/gibr.svg)](https://github.com/ytreister/gibr/pulls)
+[![Lint](https://github.com/ytreister/gibr/actions/workflows/lint.yml/badge.svg)](https://github.com/ytreister/gibr/actions/workflows/lint.yml)
 
 # gibr
 
