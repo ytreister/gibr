@@ -1,13 +1,16 @@
 """CLI for gibr."""
 
 import logging
+import os
 
 import click
+from git.config import GitConfigParser
 
 from gibr.branch import BranchName
 from gibr.config import GibrConfig
 from gibr.git import create_and_push_branch
 from gibr.logger import configure_logger
+from gibr.notify import party, success
 from gibr.trackers.factory import get_tracker
 
 
@@ -15,12 +18,23 @@ class GibrGroup(click.Group):
     """Custom Click group."""
 
     def parse_args(self, ctx, args):
-        """Preprocess args to handle 'gibr 123' as 'gibr create 123'."""
+        """Parse args to handle 'git' alias routing and default command (create)."""
+        # If 'git' alias is present, handle it
+        if args and args[0] == "git":
+            args.pop(0)
+
+            # Move all flags (starting with '--') to the front
+            flags = [a for a in args if a.startswith("--")]
+            rest = [a for a in args if not a.startswith("--")]
+            args[:] = flags + rest
+
+        # Treat numeric as 'create' (gibr 123 -> gibr create 123)
         for i, arg in enumerate(args):
             if not arg.startswith("--"):
                 if arg.isdigit() and arg not in self.commands:
                     args.insert(i, "create")
                 break
+
         return super().parse_args(ctx, args)
 
 
@@ -67,5 +81,21 @@ def issues(ctx):
         click.echo(f"#{issue.id} — {issue.title}")
 
 
-if __name__ == "__main__":
-    cli()
+@cli.command("alias")
+@click.pass_context
+def alias(ctx):
+    """Add git aliases for gibr commands."""
+    commands = [
+        name for name, cmd in ctx.parent.command.commands.items() if name != "alias"
+    ]
+
+    try:
+        config = GitConfigParser(os.path.expanduser("~/.gitconfig"), read_only=False)
+        for name in commands:
+            cmd = f"!gibr git {name}"
+            config.set_value("alias", name, cmd)
+            success(f"Added git alias: git {name} → {cmd}")
+        config.write()
+        party("Git aliases successfully added!")
+    except Exception as e:
+        raise click.ClickException(f"Failed to set git aliases: {e}")
