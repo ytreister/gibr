@@ -1,10 +1,11 @@
 """GitHub issue tracker implementation."""
 
+import click
 from github import Github
 from github.GithubException import UnknownObjectException
 
-from gibr.error import IssueNotFoundError
 from gibr.issue import Issue
+from gibr.notify import error
 
 from .base import IssueTracker
 
@@ -22,11 +23,23 @@ class GithubTracker(IssueTracker):
         try:
             issue = self.repo.get_issue(number=int(issue_id))
         except UnknownObjectException:
-            raise IssueNotFoundError(
-                f"Issue #{issue_id} not found in GitHub repository."
+            raise click.ClickException(
+                error(f"Issue #{issue_id} not found in repository.")
             )
         return Issue(
             id=issue.number,
             title=issue.title,
             type="issue",
         )
+
+    def list_issues(self) -> list[dict]:
+        """List open issues from the GitHub repository."""
+        issues = self.repo.get_issues(state="open")
+        return [
+            Issue(
+                id=issue.number,
+                title=issue.title,
+                type="issue",
+            )
+            for issue in issues
+        ]
