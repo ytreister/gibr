@@ -56,7 +56,7 @@ addopts = "-v --color=yes --cov-fail-under=25 --cov=. --cov-report term-missing 
 
 [tool.ruff.lint]
 select = ["F", "E", "W", "I", "N", "D", "UP", "PLR"]
-ignore = ["D213", "D203"]
+ignore = ["D213", "D203", "D104"]
 
 [tool.coverage.run]
 omit = [
