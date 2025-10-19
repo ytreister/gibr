@@ -62,3 +62,9 @@ ignore = ["D213", "D203"]
 omit = [
     "tests/*"
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+    "pytest-cov>=7.0.0",
+]

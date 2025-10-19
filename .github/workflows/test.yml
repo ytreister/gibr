@@ -1,0 +1,16 @@
+name: Test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    container:
+      image: pytestdev/pytest:latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install uv
+      - run: uv pip install ".[dev]"
+      - run: pytest
