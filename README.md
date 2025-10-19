@@ -1,3 +1,6 @@
+[![Tests](https://github.com/ytreister/gibr/actions/workflows/test.yml/badge.svg)](https://github.com/ytreister/gibr/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/ytreister/gibr/branch/main/graph/badge.svg)](https://codecov.io/gh/ytreister/gibr)
+
 # gibr
 
 A CLI that generates Git branch names from issue trackers (currently GitHub) and

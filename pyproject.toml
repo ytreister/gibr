@@ -52,7 +52,7 @@ explicit = true
 pythonpath = [
     "src"
 ]
-addopts = "-v --color=yes --cov-fail-under=25 --cov=. --cov-report term-missing --cov-report html"
+addopts = "-v --color=yes --cov-fail-under=25 --cov=. --cov-report term-missing --cov-report html --cov-report xml"
 
 [tool.ruff.lint]
 select = ["F", "E", "W", "I", "N", "D", "UP", "PLR"]
