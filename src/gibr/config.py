@@ -57,6 +57,7 @@ class GibrConfig:
             return f"""Jira:
         URL                : {self.config.get("jira", {}).get("url")}
         Project Key        : {self.config.get("jira", {}).get("project_key")}
+        User               : {self.config.get("jira", {}).get("user")}
         Token              : {self.config.get("jira", {}).get("token")}"""
         else:
             return ""
