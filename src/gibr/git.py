@@ -63,5 +63,4 @@ def create_and_push_branch(branch_name: str):
         success(f"Pushed branch '{branch_name}' to origin.")
 
     except GitCommandError as e:
-        logging.error(f"Git command failed: {e}")
-        raise
+        error(f"Git command failed: {e}")
