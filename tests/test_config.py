@@ -54,17 +54,13 @@ def test_find_config_file_finds_in_parent_dir(temp_config_file):
         assert result == temp_config_file
 
 
-@patch("gibr.config.error")
-def test_load_no_config_file_calls_error(mock_error):
-    """load() should call error() when config file is not found."""
+def test_load_no_config_file_raises_file_not_found():
+    """load() should raise FileNotFoundError when config file is not found."""
     with patch.object(GibrConfig, "_find_config_file", return_value=None):
-        mock_error.side_effect = SystemExit  # mimic click.Abort
         g = GibrConfig()
-        with pytest.raises(SystemExit):
+        with pytest.raises(FileNotFoundError) as excinfo:
             g.load()
-        mock_error.assert_called_once_with(
-            ".gibrconfig not found in this or any parent directory"
-        )
+        assert ".gibrconfig not found" in str(excinfo.value)
 
 
 @patch("gibr.config.ConfigParser")

@@ -7,13 +7,17 @@ from git import GitConfigParser
 
 from gibr.notify import party, success
 
+DO_NOT_ALIAS = ["alias", "init"]
+
 
 @click.command("alias")
 @click.pass_context
 def alias(ctx):
     """Add git aliases for gibr commands."""
     commands = [
-        name for name, cmd in ctx.parent.command.commands.items() if name != "alias"
+        name
+        for name, cmd in ctx.parent.command.commands.items()
+        if name not in DO_NOT_ALIAS
     ]
 
     try:

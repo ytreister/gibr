@@ -8,11 +8,11 @@ from git import GitCommandError, Repo
 from gibr.notify import error, info, success, warning
 
 
-def create_and_push_branch(branch_name: str):
+def create_and_push_branch(branch_name: str, repo: Repo | None = None) -> None:
     """Create a new branch and push it to origin."""
     try:
-        repo = Repo(".")
-        if repo.is_dirty():
+        repo = repo or Repo(".")
+        if repo.is_dirty(untracked_files=False):
             warning("Working tree is dirty — uncommitted changes present.")
 
         # Handle repo with no commits yet (no HEAD)
@@ -44,7 +44,7 @@ def create_and_push_branch(branch_name: str):
                     )
                     new_name = f"{branch_name}-{suffix}"
                     info(f"Creating new branch '{new_name}' instead.")
-                    return create_and_push_branch(new_name)
+                    return create_and_push_branch(new_name, repo)
                 else:
                     info("Operation canceled by user.")
                     return
