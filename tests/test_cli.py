@@ -106,3 +106,66 @@ def test_cli_fails_on_unknown_command():
     result = runner.invoke(cli, ["nonexistent"])
     assert result.exit_code != 0
     assert "No such command" in result.output
+
+
+@patch("click.confirm", return_value=False)
+@patch("gibr.cli.warning")
+@patch("gibr.cli.GibrConfig")
+def test_file_not_found_shows_init_prompt(
+    mock_gibr_config, mock_warning, _mock_confirm
+):
+    """When the config file is missing, CLI should warn and suggest `gibr init`."""
+    runner = CliRunner()
+
+    mock_cfg = MagicMock()
+    mock_cfg.load.side_effect = FileNotFoundError("config file not found")
+    mock_gibr_config.return_value = mock_cfg
+
+    result = runner.invoke(cli, ["create", "1"])
+
+    assert result.exit_code == 0
+    mock_warning.assert_called_once_with("config file not found")
+    assert "Run `gibr init` to create a new configuration file." in result.output
+
+
+@patch("gibr.cli.init")
+@patch("click.confirm", return_value=True)
+@patch("gibr.cli.warning")
+@patch("gibr.cli.GibrConfig")
+def test_file_not_found_runs_init_when_user_confirms(
+    mock_gibr_config, mock_warning, _mock_confirm, mock_init
+):
+    """When config file is missing and user agrees, CLI should invoke `gibr init`."""
+    runner = CliRunner()
+
+    mock_cfg = MagicMock()
+    mock_cfg.load.side_effect = FileNotFoundError("config file not found")
+    mock_gibr_config.return_value = mock_cfg
+
+    result = runner.invoke(cli, ["create", "1"])
+
+    assert result.exit_code == 0
+    mock_warning.assert_called_once_with("config file not found")
+
+    # Verify the init command was invoked
+    mock_init.assert_called_once()
+
+
+@patch("gibr.cli.logging.debug")
+@patch("gibr.cli.get_tracker")
+@patch("gibr.cli.GibrConfig")
+def test_init_command_skips_config_loading(
+    mock_gibr_config, mock_get_tracker, mock_debug
+):
+    """The 'init' command should skip config loading and log the debug message."""
+    runner = CliRunner()
+
+    # Run the CLI with the `init` subcommand
+    runner.invoke(cli, ["init"])
+
+    # Verify config and tracker loading were NOT called
+    mock_gibr_config.assert_not_called()
+    mock_get_tracker.assert_not_called()
+
+    # Verify the debug message was logged
+    mock_debug.assert_any_call("Skipping config loading for init command.")

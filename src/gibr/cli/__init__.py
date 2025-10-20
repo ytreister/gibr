@@ -40,7 +40,7 @@ def cli(ctx, verbose):
         click.echo("👉 Run `gibr init` to create a new configuration file.\n")
         if click.confirm("Would you like to run `gibr init` now?", default=True):
             ctx.invoke(init)
-            ctx.exit(0)
+        ctx.exit(0)
 
 
 cli.add_command(create)
