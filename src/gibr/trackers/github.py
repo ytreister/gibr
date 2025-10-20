@@ -1,6 +1,6 @@
 """GitHub issue tracker implementation."""
 
-from github import Github
+from github import Auth, Github
 from github.GithubException import UnknownObjectException
 
 from gibr.issue import Issue
@@ -14,7 +14,7 @@ class GithubTracker(IssueTracker):
 
     def __init__(self, repo: str, token: str):
         """Construct GithubTracker object."""
-        self.client = Github(token)
+        self.client = Github(auth=Auth.Token(token))
         self.repo = self.client.get_repo(repo)
 
     def get_issue(self, issue_id: str) -> dict:
