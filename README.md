@@ -93,6 +93,20 @@ name = github
 repo = owner/repo
 token = $GITHUB_TOKEN
 ```
+### Jira configuration example
+```ini
+[DEFAULT]
+branch_name_format = {issuetype}/{issue}-{title}
+
+[issue-tracker]
+name = jira
+
+[jira]
+url = https://project_name.atlassian.net
+project_key=project_key
+user=email@domain.com
+token = $JIRA_TOKEN
+```
 
 Notes:
 - Environment variables in config values are expanded.

@@ -53,6 +53,12 @@ class GibrConfig:
             return f"""Github:
         Repo               : {self.config.get("github", {}).get("repo")}
         Token              : {self.config.get("github", {}).get("token")}"""
+        elif tracker_type == "jira":
+            return f"""Jira:
+        URL                : {self.config.get("jira", {}).get("url")}
+        Project Key        : {self.config.get("jira", {}).get("project_key")}
+        User               : {self.config.get("jira", {}).get("user")}
+        Token              : {self.config.get("jira", {}).get("token")}"""
         else:
             return ""
 
