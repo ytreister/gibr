@@ -3,8 +3,8 @@
 from unittest.mock import MagicMock, patch
 
 import click
-from jira import JIRAError
 import pytest
+from jira import JIRAError
 
 from gibr.issue import Issue
 from gibr.trackers.jira import JiraTracker
@@ -56,8 +56,7 @@ def test_get_issue_success(mock_jira_cls, mock_jira_client):
 @patch("gibr.trackers.jira.error")
 @patch("gibr.trackers.jira.JIRA")
 def test_get_issue_not_found(mock_jira_cls, mock_error):
-    """When JIRA reports a missing issue, notify.error should be invoked (raises click.Abort)."""
-
+    """Test issue not found handling in get_issue."""
     mock_error.side_effect = click.Abort
     mock_client = mock_jira_cls.return_value
     mock_client.issue.side_effect = JIRAError(status_code=404, text="not found")
