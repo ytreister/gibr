@@ -6,11 +6,13 @@ import click
 
 from gibr.config import GibrConfig
 from gibr.logger import configure_logger
+from gibr.notify import warning
 from gibr.trackers.factory import get_tracker
 
 from .alias import alias
 from .create import create
 from .group import GibrGroup
+from .init import init
 from .issues import issues
 
 
@@ -26,11 +28,22 @@ def cli(ctx, verbose):
     logging.debug("Verbose modes enabled.")
 
     # Initialize shared config and tracker once
-    config = GibrConfig().load()
-    ctx.obj["config"] = config
-    ctx.obj["tracker"] = get_tracker(config.config)
+    if ctx.invoked_subcommand == "init":
+        logging.debug("Skipping config loading for init command.")
+        return
+    try:
+        config = GibrConfig().load()
+        ctx.obj["config"] = config
+        ctx.obj["tracker"] = get_tracker(config.config)
+    except FileNotFoundError as e:
+        warning(str(e))
+        click.echo("👉 Run `gibr init` to create a new configuration file.\n")
+        if click.confirm("Would you like to run `gibr init` now?", default=True):
+            ctx.invoke(init)
+        ctx.exit(0)
 
 
 cli.add_command(create)
 cli.add_command(issues)
 cli.add_command(alias)
+cli.add_command(init)

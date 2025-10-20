@@ -14,11 +14,9 @@ def test_issue_initialization():
     assert issue.type == "bug"
 
 
-@patch("gibr.issue.slugify")
+@patch("gibr.issue.slugify", return_value="fake-slug")
 def test_sanitized_title_uses_slugify(mock_slugify):
     """Ensure sanitized_title delegates to slugify with the issue title."""
-    mock_slugify.return_value = "fake-slug"
-
     issue = Issue(id=1, title="Example Title", type="task")
     result = issue.sanitized_title
 

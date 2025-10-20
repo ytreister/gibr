@@ -5,8 +5,6 @@ from configparser import BasicInterpolation, ConfigParser
 from os import path
 from pathlib import Path
 
-from gibr.notify import error
-
 
 class EnvInterpolation(BasicInterpolation):
     """Expand environment variables inside .gibrconfig."""
@@ -75,8 +73,9 @@ class GibrConfig:
         """Load .gibrconfig into a simple dictionary."""
         config_file = self._find_config_file()
         if not config_file:
-            error(f"{self.CONFIG_FILENAME} not found in this or any parent directory")
-
+            raise FileNotFoundError(
+                f"{self.CONFIG_FILENAME} not found in this or any parent directory"
+            )
         parser = ConfigParser(interpolation=EnvInterpolation())
         parser.read(config_file)
         self.config_file = config_file
