@@ -63,43 +63,47 @@ def test_load_no_config_file_raises_file_not_found():
         assert ".gibrconfig not found" in str(excinfo.value)
 
 
-@patch("gibr.config.ConfigParser")
-def test_load_reads_config_and_sets_attributes(mock_parser_cls, temp_config_file):
+@patch("gibr.config.ConfigParser", return_value=MagicMock())
+@patch.object(GibrConfig, "_find_config_file")
+def test_load_reads_config_and_sets_attributes(
+    mock_find_file, mock_parser, temp_config_file
+):
     """load() should populate config dict correctly."""
-    mock_parser = mock_parser_cls.return_value
-    mock_parser.sections.return_value = ["issue-tracker", "github"]
-    mock_parser.items.side_effect = (
-        lambda section: [
-            ("name", "github"),
-        ]
+    mock_find_file.return_value = temp_config_file
+    parser_instance = mock_parser.return_value
+
+    parser_instance.sections.return_value = ["issue-tracker", "github"]
+    parser_instance.items.side_effect = (
+        lambda section: [("name", "github")]
         if section == "issue-tracker"
-        else [
-            ("repo", "ytreister/gibr"),
-            ("token", "ghp_testtoken"),
-        ]
+        else [("repo", "ytreister/gibr"), ("token", "ghp_testtoken")]
     )
-    mock_parser.defaults.return_value = {"branch_name_format": "feat/{id}-{summary}"}
+    parser_instance.defaults.return_value = {
+        "branch_name_format": "feat/{id}-{summary}"
+    }
 
-    with patch.object(GibrConfig, "_find_config_file", return_value=temp_config_file):
-        g = GibrConfig()
-        result = g.load()
-        assert result is g
-        assert "issue-tracker" in g.config
-        assert g.config["github"]["repo"] == "ytreister/gibr"
-
-
-def test_str_outputs_expected_for_github_config(temp_config_file):
-    """__str__ should include GitHub details when tracker is github."""
     g = GibrConfig()
-    with patch.object(GibrConfig, "_find_config_file", return_value=temp_config_file):
-        g.load()
+    result = g.load()
+
+    assert result is g
+    assert "issue-tracker" in g.config
+    assert g.config["github"]["repo"] == "ytreister/gibr"
+
+
+@patch.object(GibrConfig, "_find_config_file")
+def test_str_outputs_expected_for_github_config(mock_find_file, temp_config_file):
+    """__str__ should include GitHub details when tracker is github."""
+    mock_find_file.return_value = temp_config_file
+    g = GibrConfig()
+    g.load()
     output = str(g)
     assert "Github:" in output
     assert "ytreister/gibr" in output
     assert "ghp_testtoken" in output
 
 
-def test_str_outputs_expected_for_jira_config(tmp_path):
+@patch.object(GibrConfig, "_find_config_file")
+def test_str_outputs_expected_for_jira_config(mock_find_file, tmp_path):
     """__str__ should include Jira details when tracker is jira."""
     cfg_content = dedent("""
         [issue-tracker]
@@ -113,10 +117,9 @@ def test_str_outputs_expected_for_jira_config(tmp_path):
     """)
     cfg_file = tmp_path / ".gibrconfig"
     cfg_file.write_text(cfg_content)
-
+    mock_find_file.return_value = cfg_file
     g = GibrConfig()
-    with patch.object(GibrConfig, "_find_config_file", return_value=cfg_file):
-        g.load()
+    g.load()
     output = str(g)
     assert "Jira:" in output
     assert "example.atlassian.net" in output

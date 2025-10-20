@@ -69,7 +69,7 @@ def init():
         project_key = click.prompt("Jira project key (e.g. PROJ)")
         user = click.prompt("Jira username/email")
         token_var = click.prompt(
-            "Environment variable for your Jira token", default="JIRA_API_TOKEN"
+            "Environment variable for your Jira token", default="JIRA_TOKEN"
         )
         check_token(token_var, tracker_name)
 
