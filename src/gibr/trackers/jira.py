@@ -27,7 +27,6 @@ class JiraTracker(IssueTracker):
             issue = self.client.issue(issue_key)
         except JIRAError:
             error(f"Issue {issue_key} not found in Jira project {self.project_key}.")
-            return None
 
         return Issue(
             id=issue.key,
@@ -42,12 +41,7 @@ class JiraTracker(IssueTracker):
             "AND statusCategory != Done "
             "ORDER BY created DESC"
         )
-        try:
-            issues = self.client.search_issues(jql, maxResults=50)
-        except JIRAError as e:
-            error(f"Failed to list issues for project {self.project_key}: {e.text}")
-            return []
-
+        issues = self.client.search_issues(jql)
         return [
             Issue(
                 id=issue.key,
