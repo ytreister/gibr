@@ -69,7 +69,9 @@ class GithubTracker(IssueTracker):
             Issue(
                 id=issue.number,
                 title=issue.title,
-                type="issue",
+                type="issue"
+                if getattr(issue, "pull_request", None) is None
+                else "pull_request",
             )
             for issue in issues
         ]
