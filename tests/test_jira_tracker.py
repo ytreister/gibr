@@ -28,14 +28,43 @@ def mock_jira_client():
 
 
 @patch("gibr.trackers.jira.JIRA")
-def test_init_success(mock_jira_cls, mock_jira_client):
-    """JiraTracker initializes and stores client and project key."""
+def test_from_config_creates_instance(mock_jira_cls, mock_jira_client):
+    """from_config should create JiraTracker with correct params."""
     mock_jira_cls.return_value = mock_jira_client
 
-    tracker = JiraTracker(url="http://jira", user="u", token="t", project_key="PROJ")
+    config = {
+        "url": "http://jira",
+        "user": "me",
+        "token": "secret",
+        "project_key": "PROJ",
+    }
 
-    assert tracker.client is mock_jira_client
+    tracker = JiraTracker.from_config(config)
+
+    mock_jira_cls.assert_called_once_with(
+        server="http://jira", basic_auth=("me", "secret")
+    )
+    assert isinstance(tracker, JiraTracker)
     assert tracker.project_key == "PROJ"
+    assert tracker.client is mock_jira_client
+
+
+@pytest.mark.parametrize("missing_key", ["url", "user", "token", "project_key"])
+def test_from_config_raises_valueerror_for_missing_keys(missing_key):
+    """from_config should raise ValueError for each missing required key."""
+    base_config = {
+        "url": "http://jira",
+        "user": "me",
+        "token": "secret",
+        "project_key": "PROJ",
+    }
+    bad_config = base_config.copy()
+    del bad_config[missing_key]
+
+    with pytest.raises(ValueError) as excinfo:
+        JiraTracker.from_config(bad_config)
+
+    assert f"Missing key in 'jira' config: {missing_key}" in str(excinfo.value)
 
 
 @patch("gibr.trackers.jira.JIRA")
@@ -85,6 +114,17 @@ def test_list_issues_returns_list(mock_jira_cls, mock_jira_client):
 
 
 @patch("gibr.trackers.jira.JIRA")
+def test_init_success(mock_jira_cls, mock_jira_client):
+    """JiraTracker initializes and stores client and project key."""
+    mock_jira_cls.return_value = mock_jira_client
+
+    tracker = JiraTracker(url="http://jira", user="u", token="t", project_key="PROJ")
+
+    assert tracker.client is mock_jira_client
+    assert tracker.project_key == "PROJ"
+
+
+@patch("gibr.trackers.jira.JIRA")
 def test_init_raises_valueerror_on_connection_failure(mock_jira_cls):
     """If the JIRA constructor raises JIRAError, JiraTracker should raise ValueError."""
     mock_jira_cls.side_effect = JIRAError(text="auth failed")
@@ -93,3 +133,54 @@ def test_init_raises_valueerror_on_connection_failure(mock_jira_cls):
         JiraTracker(url="http://jira", user="u", token="t", project_key="PROJ")
 
     assert "Failed to connect to Jira" in str(e.value)
+
+
+def test_describe_config_returns_expected_format():
+    """describe_config() should return a formatted summary of the config."""
+    config = {
+        "url": "https://example.atlassian.net",
+        "project_key": "TEST",
+        "user": "alice",
+        "token": "abc123",
+    }
+
+    result = JiraTracker.describe_config(config)
+
+    # Core structure
+    assert result.startswith("Jira:")
+    assert "URL" in result
+    assert "Project Key" in result
+    assert "User" in result
+    assert "Token" in result
+
+    # Values interpolated correctly
+    assert "https://example.atlassian.net" in result
+    assert "TEST" in result
+    assert "alice" in result
+    assert "abc123" in result
+
+
+@patch.object(JiraTracker, "check_token")
+@patch(
+    "click.prompt",
+    side_effect=[
+        "https://company.atlassian.net",
+        "PROJ",
+        "me@company.com",
+        "MY_JIRA_TOKEN",
+    ],
+)
+def test_configure_interactively(mock_prompt, mock_check_token):
+    """Should prompt user for Jira settings and return correct dict."""
+    result = JiraTracker.configure_interactively()
+    expected_call_count = 4
+    assert mock_prompt.call_count == expected_call_count
+    mock_check_token.assert_called_once_with("MY_JIRA_TOKEN")
+
+    # Verify the returned config
+    assert result == {
+        "url": "https://company.atlassian.net",
+        "project_key": "PROJ",
+        "user": "me@company.com",
+        "token": "${MY_JIRA_TOKEN}",
+    }
