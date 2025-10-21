@@ -1,5 +1,6 @@
 """Jira issue tracker implementation."""
 
+import click
 from jira import JIRA
 from jira.exceptions import JIRAError
 
@@ -24,6 +25,23 @@ class JiraTracker(IssueTracker):
             self.client = JIRA(server=url, basic_auth=(user, token))
         except JIRAError as e:
             raise ValueError(f"Failed to connect to Jira: {e.text}")
+
+    @classmethod
+    def configure_interactively(cls) -> dict:
+        """Prompt user for Jira-specific configuration."""
+        url = click.prompt("Jira base URL (e.g. https://company.atlassian.net)")
+        project_key = click.prompt("Jira project key (e.g. PROJ)")
+        user = click.prompt("Jira username/email")
+        token_var = click.prompt(
+            "Environment variable for your Jira token", default="JIRA_TOKEN"
+        )
+        cls.check_token(token_var)
+        return {
+            "url": url,
+            "project_key": project_key,
+            "user": user,
+            "token": f"${{{token_var}}}",
+        }
 
     @classmethod
     def from_config(cls, config):

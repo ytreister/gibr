@@ -1,33 +1,12 @@
 """CLI command to initialize gibr configuration interactively."""
 
 import configparser
-import os
 from pathlib import Path
 
 import click
 
-from gibr.notify import party, success, warning
-
-TRACKERS = {
-    "1": ("GitHub", True),
-    "2": ("Jira", True),
-    "3": ("GitLab", False),
-    "4": ("Linear", False),
-    "5": ("Monday.com", False),
-}
-
-
-def check_token(var_name: str, service_name: str) -> str:
-    """Check if a token exists in env or prompt to create it."""
-    token = os.getenv(var_name)
-    if token:
-        party(f"Found {service_name} token in environment ({var_name})")
-        return
-
-    warning(f"No {service_name} token found in environment ({var_name}).")
-    click.echo("You can set it by running:")
-    click.echo(f'  export {var_name}="your_token_here"  (macOS/Linux)')
-    click.echo(f'  setx {var_name} "your_token_here"     (Windows)\n')
+from gibr.notify import success, warning
+from gibr.registry import TRACKER_REGISTRY
 
 
 @click.command("init")
@@ -36,49 +15,36 @@ def init():
     click.echo("Welcome to gibr setup! Let’s get you started 🚀\n")
 
     click.echo("Which issue tracker do you use?")
-    for k, (name, supported) in TRACKERS.items():
-        label = name if supported else f"{name} (coming soon)"
-        click.echo(f"{k}. {label}")
+    supported_trackers = {k: v for k, v in TRACKER_REGISTRY.items() if v["supported"]}
+    unsupported_trackers = {
+        k: v for k, v in TRACKER_REGISTRY.items() if not v["supported"]
+    }
+    options = list(supported_trackers.items()) + list(unsupported_trackers.items())
+    for i, (key, info) in enumerate(options, 1):
+        label = info["display_name"]
+        if not info["supported"]:
+            label += " (coming soon)"
+        click.echo(f"{i}. {label}")
 
     choice = click.prompt(
-        "\nSelect a number", default="1", type=click.Choice(TRACKERS.keys())
+        "\nSelect a number",
+        default="1",
+        type=click.Choice([str(i) for i in range(1, len(options) + 1)]),
     )
+    choice = int(choice)
 
-    tracker_name, supported = TRACKERS[choice]
-    if not supported:
-        warning(f"{tracker_name} support is coming soon — stay tuned!")
+    tracker_key, info = options[choice - 1]
+    if not info["supported"]:
+        warning(f"{info['display_name']} support is coming soon — stay tuned!")
         return
-    tracker_key = tracker_name.lower().replace(".", "").replace(" ", "")
 
-    click.echo(f"\n{tracker_name} selected.\n")
+    tracker_cls = info["class"]
+    click.echo(f"\n{tracker_cls.display_name} selected.\n")
 
     config = configparser.ConfigParser()
     config["DEFAULT"] = {"branch_name_format": "{issue}-{title}"}
     config["issue-tracker"] = {"name": tracker_key}
-
-    if tracker_key == "github":
-        repo = click.prompt("GitHub repository (e.g. user/repo)")
-        token_var = click.prompt(
-            "Environment variable for your GitHub token", default="GITHUB_TOKEN"
-        )
-        check_token(token_var, tracker_name)
-        config["github"] = {"repo": repo, "token": f"${{{token_var}}}"}
-
-    elif tracker_key == "jira":
-        url = click.prompt("Jira base URL (e.g. https://company.atlassian.net)")
-        project_key = click.prompt("Jira project key (e.g. PROJ)")
-        user = click.prompt("Jira username/email")
-        token_var = click.prompt(
-            "Environment variable for your Jira token", default="JIRA_TOKEN"
-        )
-        check_token(token_var, tracker_name)
-
-        config["jira"] = {
-            "url": url,
-            "project_key": project_key,
-            "user": user,
-            "token": f"${{{token_var}}}",
-        }
+    config[tracker_key] = tracker_cls.configure_interactively()
 
     path = Path(".gibrconfig")
     if path.exists():
@@ -92,5 +58,5 @@ def init():
     with open(path, "w") as f:
         config.write(f)
 
-    success(f"Created {path} with {tracker_name} settings")
+    success(f"Created {path} with {info['display_name']} settings")
     click.secho("You're all set! Try: `gibr issues`\n", fg="cyan")

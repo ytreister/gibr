@@ -1,5 +1,6 @@
 """GitHub issue tracker implementation."""
 
+import click
 from github import Auth, Github
 from github.GithubException import UnknownObjectException
 
@@ -21,6 +22,16 @@ class GithubTracker(IssueTracker):
         """Construct GithubTracker object."""
         self.client = Github(auth=Auth.Token(token))
         self.repo = self.client.get_repo(repo)
+
+    @classmethod
+    def configure_interactively(cls) -> dict:
+        """Prompt user for GitHub-specific configuration."""
+        repo = click.prompt("GitHub repository (e.g. user/repo)")
+        token_var = click.prompt(
+            "Environment variable for your GitHub token", default="GITHUB_TOKEN"
+        )
+        cls.check_token(token_var)
+        return {"repo": repo, "token": f"${{{token_var}}}"}
 
     @classmethod
     def from_config(cls, config):

@@ -6,7 +6,8 @@ TRACKER_REGISTRY = {}
 def register_tracker(key, display_name, supported=True):
     """Register a tracker class using this decorator."""
 
-    def wrapper(cls):
+    def decorator(cls):
+        cls.display_name = display_name
         TRACKER_REGISTRY[key] = {
             "class": cls,
             "display_name": display_name,
@@ -14,7 +15,7 @@ def register_tracker(key, display_name, supported=True):
         }
         return cls
 
-    return wrapper
+    return decorator
 
 
 def get_tracker_class(key: str):
