@@ -66,12 +66,7 @@ class GithubTracker(IssueTracker):
         """List open issues from the GitHub repository."""
         issues = self.repo.get_issues(state="open")
         return [
-            Issue(
-                id=issue.number,
-                title=issue.title,
-                type="issue"
-                if getattr(issue, "pull_request", None) is None
-                else "pull_request",
-            )
+            Issue(id=issue.number, title=issue.title, type="issue")
             for issue in issues
+            if getattr(issue, "pull_request", None) is None
         ]
