@@ -32,6 +32,7 @@ def create_and_push_branch(branch_name: str, repo: Repo | None = None) -> None:
         if branch_name in repo.heads:
             if current_branch == branch_name:
                 warning(f"Branch '{branch_name}' already exists and is checked out")
+                repo.close()
                 return
             else:
                 warning(f"Branch '{branch_name}' already exists locally.")
@@ -47,6 +48,7 @@ def create_and_push_branch(branch_name: str, repo: Repo | None = None) -> None:
                     return create_and_push_branch(new_name, repo)
                 else:
                     info("Operation canceled by user.")
+                    repo.close()
                     return
         else:
             # Create new branch from current HEAD
@@ -61,6 +63,7 @@ def create_and_push_branch(branch_name: str, repo: Repo | None = None) -> None:
         origin = repo.remote(name="origin")
         origin.push(refspec=f"{branch_name}:{branch_name}", set_upstream=True)
         success(f"Pushed branch '{branch_name}' to origin.")
+        repo.close()
 
     except GitCommandError as e:
         error(f"Git command failed: {e}")
