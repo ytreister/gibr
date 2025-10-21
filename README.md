@@ -55,8 +55,8 @@ Welcome to gibr setup! Let’s get you started 🚀
 
 Which issue tracker do you use?
 1. GitHub
-2. Jira
-3. GitLab (coming soon)
+2. GitLab
+3. Jira
 4. Linear (coming soon)
 5. Monday.com (coming soon)
 

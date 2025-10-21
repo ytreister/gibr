@@ -42,7 +42,7 @@ def test_init_github_creates_config(
     },
 )
 @patch("click.confirm", return_value=True)
-@patch("click.prompt", side_effect=["2"])
+@patch("click.prompt", side_effect=["3"])
 def test_init_jira_creates_config(
     _mock_prompt, _mock_confirm, _mock_configure, tmp_path
 ):
@@ -63,7 +63,7 @@ def test_init_jira_creates_config(
         assert "token = ${JIRA_API_TOKEN}" in content
 
 
-@patch("click.prompt", side_effect=["3"])
+@patch("click.prompt", side_effect=["5"])
 @patch("gibr.cli.init.warning")
 def test_init_unsupported_tracker(_mock_warning, _mock_prompt, tmp_path):
     """Should warn and exit for unsupported tracker."""
