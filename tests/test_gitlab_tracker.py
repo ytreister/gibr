@@ -71,7 +71,8 @@ def test_get_issue_success(mock_gitlab_cls, mock_gitlab_client, mock_gitlab_proj
     issue = tracker.get_issue("42")
     mock_gitlab_project.issues.get.assert_called_once_with("42")
     assert isinstance(issue, Issue)
-    assert issue.id == 42
+    issue_id = 42
+    assert issue.id == issue_id
     assert issue.title == "Fix pipeline bug"
     assert issue.type == "issue"
 
