@@ -124,3 +124,19 @@ def test_describe_config_returns_expected_format():
     # Values interpolated correctly
     assert "owner/repo" in result
     assert "secrettoken" in result
+
+
+@patch.object(GithubTracker, "check_token")
+@patch("click.prompt", side_effect=["user/repo", "MY_GITHUB_TOKEN"])
+def test_github_configure_interactively(mock_prompt, mock_check_token):
+    """Should prompt user for GitHub settings and return correct dict."""
+    result = GithubTracker.configure_interactively()
+    expected_call_count = 2
+    assert mock_prompt.call_count == expected_call_count
+    mock_check_token.assert_called_once_with("MY_GITHUB_TOKEN")
+
+    # Verify result dictionary
+    assert result == {
+        "repo": "user/repo",
+        "token": "${MY_GITHUB_TOKEN}",
+    }

@@ -158,3 +158,29 @@ def test_describe_config_returns_expected_format():
     assert "TEST" in result
     assert "alice" in result
     assert "abc123" in result
+
+
+@patch.object(JiraTracker, "check_token")
+@patch(
+    "click.prompt",
+    side_effect=[
+        "https://company.atlassian.net",
+        "PROJ",
+        "me@company.com",
+        "MY_JIRA_TOKEN",
+    ],
+)
+def test_configure_interactively(mock_prompt, mock_check_token):
+    """Should prompt user for Jira settings and return correct dict."""
+    result = JiraTracker.configure_interactively()
+    expected_call_count = 4
+    assert mock_prompt.call_count == expected_call_count
+    mock_check_token.assert_called_once_with("MY_JIRA_TOKEN")
+
+    # Verify the returned config
+    assert result == {
+        "url": "https://company.atlassian.net",
+        "project_key": "PROJ",
+        "user": "me@company.com",
+        "token": "${MY_JIRA_TOKEN}",
+    }
