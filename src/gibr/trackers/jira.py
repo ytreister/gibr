@@ -37,6 +37,15 @@ class JiraTracker(IssueTracker):
             raise ValueError(f"Missing key in 'jira' config: {e.args[0]}")
         return cls(url=url, user=user, token=token, project_key=project_key)
 
+    @classmethod
+    def describe_config(cls, config: dict) -> str:
+        """Return a string summarizing the JIRA tracker configuration."""
+        return f"""Jira:
+        URL                : {config.get("url")}
+        Project Key        : {config.get("project_key")}
+        User               : {config.get("user")}
+        Token              : {config.get("token")}"""
+
     def get_issue(self, issue_id: str) -> dict:
         """Fetch issue details by issue number (using project key)."""
         issue_key = f"{self.project_key}-{issue_id}"

@@ -32,6 +32,13 @@ class GithubTracker(IssueTracker):
             raise ValueError(f"Missing key in 'github' config: {e.args[0]}")
         return cls(repo=repo, token=token)
 
+    @classmethod
+    def describe_config(cls, config: dict) -> str:
+        """Return a short string describing the config."""
+        return f"""Github:
+        Repo               : {config.get("repo")}
+        Token              : {config.get("token")}"""
+
     def get_issue(self, issue_id: str) -> dict:
         """Fetch issue details by issue number."""
         try:

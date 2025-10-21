@@ -5,6 +5,8 @@ from configparser import BasicInterpolation, ConfigParser
 from os import path
 from pathlib import Path
 
+from gibr.registry import get_tracker_class
+
 
 class EnvInterpolation(BasicInterpolation):
     """Expand environment variables inside .gibrconfig."""
@@ -47,18 +49,19 @@ class GibrConfig:
     def _get_tracker_details_str(self):
         """Get tracker details string for __str__."""
         tracker_type = self.config.get("issue-tracker", {}).get("name")
-        if tracker_type == "github":
-            return f"""Github:
-        Repo               : {self.config.get("github", {}).get("repo")}
-        Token              : {self.config.get("github", {}).get("token")}"""
-        elif tracker_type == "jira":
-            return f"""Jira:
-        URL                : {self.config.get("jira", {}).get("url")}
-        Project Key        : {self.config.get("jira", {}).get("project_key")}
-        User               : {self.config.get("jira", {}).get("user")}
-        Token              : {self.config.get("jira", {}).get("token")}"""
-        else:
+        if not tracker_type:
             return ""
+
+        try:
+            tracker_cls = get_tracker_class(tracker_type)
+        except ValueError:
+            return f"Unknown tracker: {tracker_type}"
+
+        describe = getattr(tracker_cls, "describe_config", None)
+        if callable(describe):
+            return describe(self.config.get(tracker_type, {}))
+        else:
+            return f"{tracker_cls.__name__}: (no describe_config() provided)"
 
     def __str__(self):
         """Stringify."""
