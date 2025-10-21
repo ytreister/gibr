@@ -14,7 +14,7 @@ from gibr.trackers.github import GithubTracker
 def mock_github_repo():
     """Fixture returning a mock repo with fake issues."""
     mock_repo = MagicMock()
-    mock_issue = MagicMock(number=123, title="Fix login bug")
+    mock_issue = MagicMock(number=123, title="Fix login bug", pull_request=None)
     mock_repo.get_issue.return_value = mock_issue
     mock_repo.get_issues.return_value = [mock_issue]
     return mock_repo
@@ -108,6 +108,32 @@ def test_list_issues_returns_list(
     assert len(issues) == 1
     assert isinstance(issues[0], Issue)
     assert issues[0].title == "Fix login bug"
+
+
+@patch("gibr.trackers.github.Github")
+def test_list_issues_excludes_pull_requests(
+    mock_github_cls, mock_github_client, mock_github_repo
+):
+    """list_issues should exclude pull requests from the returned list."""
+    # Mock one issue and one pull request
+    mock_issue = MagicMock(number=1, title="Real issue", pull_request=None)
+    mock_pr = MagicMock(
+        number=2, title="PR: not an issue", pull_request={"url": "https://..."}
+    )
+    mock_github_repo.get_issues.return_value = [mock_issue, mock_pr]
+
+    mock_github_cls.return_value = mock_github_client
+
+    tracker = GithubTracker(repo="owner/repo", token="fake-token")
+    issues = tracker.list_issues()
+
+    mock_github_repo.get_issues.assert_called_once_with(state="open")
+
+    # Only the real issue should be returned
+    assert len(issues) == 1
+    assert issues[0].id == 1
+    assert issues[0].title == "Real issue"
+    assert issues[0].type == "issue"
 
 
 def test_describe_config_returns_expected_format():
