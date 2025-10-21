@@ -133,3 +133,28 @@ def test_init_raises_valueerror_on_connection_failure(mock_jira_cls):
         JiraTracker(url="http://jira", user="u", token="t", project_key="PROJ")
 
     assert "Failed to connect to Jira" in str(e.value)
+
+
+def test_describe_config_returns_expected_format():
+    """describe_config() should return a formatted summary of the config."""
+    config = {
+        "url": "https://example.atlassian.net",
+        "project_key": "TEST",
+        "user": "alice",
+        "token": "abc123",
+    }
+
+    result = JiraTracker.describe_config(config)
+
+    # Core structure
+    assert result.startswith("Jira:")
+    assert "URL" in result
+    assert "Project Key" in result
+    assert "User" in result
+    assert "Token" in result
+
+    # Values interpolated correctly
+    assert "https://example.atlassian.net" in result
+    assert "TEST" in result
+    assert "alice" in result
+    assert "abc123" in result

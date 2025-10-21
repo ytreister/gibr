@@ -108,3 +108,19 @@ def test_list_issues_returns_list(
     assert len(issues) == 1
     assert isinstance(issues[0], Issue)
     assert issues[0].title == "Fix login bug"
+
+
+def test_describe_config_returns_expected_format():
+    """describe_config() should return a formatted summary of the config."""
+    config = {"repo": "owner/repo", "token": "secrettoken"}
+
+    result = GithubTracker.describe_config(config)
+
+    # Core structure
+    assert result.startswith("Github:")
+    assert "Repo" in result
+    assert "Token" in result
+
+    # Values interpolated correctly
+    assert "owner/repo" in result
+    assert "secrettoken" in result
