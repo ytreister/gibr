@@ -2,7 +2,7 @@
 
 import pytest
 
-import gibr.registry as registry
+from gibr import registry
 
 
 def test_register_tracker_adds_entry():
