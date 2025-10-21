@@ -5,10 +5,15 @@ from jira.exceptions import JIRAError
 
 from gibr.issue import Issue
 from gibr.notify import error
+from gibr.registry import register_tracker
 
 from .base import IssueTracker
 
 
+@register_tracker(
+    key="jira",
+    display_name="Jira",
+)
 class JiraTracker(IssueTracker):
     """Jira issue tracker."""
 
@@ -19,6 +24,18 @@ class JiraTracker(IssueTracker):
             self.client = JIRA(server=url, basic_auth=(user, token))
         except JIRAError as e:
             raise ValueError(f"Failed to connect to Jira: {e.text}")
+
+    @classmethod
+    def from_config(cls, config):
+        """Create JiraTracker from config dictionary."""
+        try:
+            url = config["url"]
+            user = config["user"]
+            token = config["token"]
+            project_key = config["project_key"]
+        except KeyError as e:
+            raise ValueError(f"Missing key in 'jira' config: {e.args[0]}")
+        return cls(url=url, user=user, token=token, project_key=project_key)
 
     def get_issue(self, issue_id: str) -> dict:
         """Fetch issue details by issue number (using project key)."""

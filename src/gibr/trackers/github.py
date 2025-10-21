@@ -5,10 +5,15 @@ from github.GithubException import UnknownObjectException
 
 from gibr.issue import Issue
 from gibr.notify import error
+from gibr.registry import register_tracker
 
 from .base import IssueTracker
 
 
+@register_tracker(
+    key="github",
+    display_name="GitHub",
+)
 class GithubTracker(IssueTracker):
     """GitHub issue tracker using PyGithub."""
 
@@ -16,6 +21,16 @@ class GithubTracker(IssueTracker):
         """Construct GithubTracker object."""
         self.client = Github(auth=Auth.Token(token))
         self.repo = self.client.get_repo(repo)
+
+    @classmethod
+    def from_config(cls, config):
+        """Create GithubTracker from config dictionary."""
+        try:
+            repo = config["repo"]
+            token = config["token"]
+        except KeyError as e:
+            raise ValueError(f"Missing key in 'github' config: {e.args[0]}")
+        return cls(repo=repo, token=token)
 
     def get_issue(self, issue_id: str) -> dict:
         """Fetch issue details by issue number."""

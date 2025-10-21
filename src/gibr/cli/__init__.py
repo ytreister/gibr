@@ -5,9 +5,9 @@ import logging
 import click
 
 from gibr.config import GibrConfig
+from gibr.factory import get_tracker
 from gibr.logger import configure_logger
 from gibr.notify import warning
-from gibr.trackers.factory import get_tracker
 
 from .alias import alias
 from .create import create

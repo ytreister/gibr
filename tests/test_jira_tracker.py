@@ -28,14 +28,43 @@ def mock_jira_client():
 
 
 @patch("gibr.trackers.jira.JIRA")
-def test_init_success(mock_jira_cls, mock_jira_client):
-    """JiraTracker initializes and stores client and project key."""
+def test_from_config_creates_instance(mock_jira_cls, mock_jira_client):
+    """from_config should create JiraTracker with correct params."""
     mock_jira_cls.return_value = mock_jira_client
 
-    tracker = JiraTracker(url="http://jira", user="u", token="t", project_key="PROJ")
+    config = {
+        "url": "http://jira",
+        "user": "me",
+        "token": "secret",
+        "project_key": "PROJ",
+    }
 
-    assert tracker.client is mock_jira_client
+    tracker = JiraTracker.from_config(config)
+
+    mock_jira_cls.assert_called_once_with(
+        server="http://jira", basic_auth=("me", "secret")
+    )
+    assert isinstance(tracker, JiraTracker)
     assert tracker.project_key == "PROJ"
+    assert tracker.client is mock_jira_client
+
+
+@pytest.mark.parametrize("missing_key", ["url", "user", "token", "project_key"])
+def test_from_config_raises_valueerror_for_missing_keys(missing_key):
+    """from_config should raise ValueError for each missing required key."""
+    base_config = {
+        "url": "http://jira",
+        "user": "me",
+        "token": "secret",
+        "project_key": "PROJ",
+    }
+    bad_config = base_config.copy()
+    del bad_config[missing_key]
+
+    with pytest.raises(ValueError) as excinfo:
+        JiraTracker.from_config(bad_config)
+
+    assert f"Missing key in 'jira' config: {missing_key}" in str(excinfo.value)
 
 
 @patch("gibr.trackers.jira.JIRA")
@@ -82,6 +111,17 @@ def test_list_issues_returns_list(mock_jira_cls, mock_jira_client):
     assert len(issues) == 1
     assert isinstance(issues[0], Issue)
     assert issues[0].title == "Implement feature X"
+
+
+@patch("gibr.trackers.jira.JIRA")
+def test_init_success(mock_jira_cls, mock_jira_client):
+    """JiraTracker initializes and stores client and project key."""
+    mock_jira_cls.return_value = mock_jira_client
+
+    tracker = JiraTracker(url="http://jira", user="u", token="t", project_key="PROJ")
+
+    assert tracker.client is mock_jira_client
+    assert tracker.project_key == "PROJ"
 
 
 @patch("gibr.trackers.jira.JIRA")

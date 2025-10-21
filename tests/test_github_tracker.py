@@ -29,6 +29,39 @@ def mock_github_client(mock_github_repo):
 
 
 @patch("gibr.trackers.github.Github")
+@patch("gibr.trackers.github.Auth")
+def test_from_config_creates_instance(mock_auth, mock_github):
+    """from_config should create GithubTracker with correct params."""
+    mock_client = MagicMock()
+    mock_repo = MagicMock()
+    mock_github.return_value = mock_client
+    mock_client.get_repo.return_value = mock_repo
+
+    config = {"repo": "owner/repo", "token": "secrettoken"}
+
+    tracker = GithubTracker.from_config(config)
+
+    mock_auth.Token.assert_called_once_with("secrettoken")
+    mock_github.assert_called_once_with(auth=mock_auth.Token.return_value)
+    mock_client.get_repo.assert_called_once_with("owner/repo")
+    assert isinstance(tracker, GithubTracker)
+    assert tracker.repo is mock_repo
+
+
+@pytest.mark.parametrize("missing_key", ["repo", "token"])
+def test_from_config_raises_valueerror_for_missing_keys(missing_key):
+    """from_config should raise ValueError for each missing required key."""
+    base_config = {"repo": "owner/repo", "token": "secrettoken"}
+    bad_config = base_config.copy()
+    del bad_config[missing_key]
+
+    with pytest.raises(ValueError) as excinfo:
+        GithubTracker.from_config(bad_config)
+
+    assert f"Missing key in 'github' config: {missing_key}" in str(excinfo.value)
+
+
+@patch("gibr.trackers.github.Github")
 def test_get_issue_success(mock_github_cls, mock_github_client, mock_github_repo):
     """Test successful get_issue returns Issue object with correct fields."""
     issue_number = 123
