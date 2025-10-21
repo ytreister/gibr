@@ -10,6 +10,7 @@ This roadmap outlines upcoming features and priorities for the gibr CLI.
 - [x] `gibr issues` and `gibr create` commands
 - [x] Continuous Integration (GitHub Actions + Codecov)
 - [x] PyPI packaging and release automation
+- [x] Refactor to support plugin style integration with each third party tool
 
 ## 🚧 Planned
 - [ ] Add GitLab issue tracker integration
@@ -22,7 +23,7 @@ This roadmap outlines upcoming features and priorities for the gibr CLI.
 - [ ] `gibr pr` / `gibr mr` command to create pull/merge requests
 - [ ] `gibr config` command to manage settings interactively
 - [ ] Autocomplete (preview)
-- [ ] Refactor to support plugin style integration with each third party tool
+
 
 ## 💡 Ideas (Open for Discussion)
 - [ ] Support dry run flag
