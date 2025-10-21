@@ -16,11 +16,11 @@ def temp_config_file(tmp_path):
         branch_name_format = feat/{issue_id}-{summary}
 
         [issue-tracker]
-        name = github
+        name = fake
 
-        [github]
-        repo = ytreister/gibr
-        token = ghp_testtoken
+        [fake]
+        foo = bar
+        baz = qux
     """)
     cfg_path = tmp_path / ".gibrconfig"
     cfg_path.write_text(cfg_content)
@@ -72,11 +72,11 @@ def test_load_reads_config_and_sets_attributes(
     mock_find_file.return_value = temp_config_file
     parser_instance = mock_parser.return_value
 
-    parser_instance.sections.return_value = ["issue-tracker", "github"]
+    parser_instance.sections.return_value = ["issue-tracker", "fake"]
     parser_instance.items.side_effect = (
-        lambda section: [("name", "github")]
+        lambda section: [("name", "fake")]
         if section == "issue-tracker"
-        else [("repo", "ytreister/gibr"), ("token", "ghp_testtoken")]
+        else [("foo", "bar"), ("baz", "qux")]
     )
     parser_instance.defaults.return_value = {
         "branch_name_format": "feat/{id}-{summary}"
@@ -87,40 +87,63 @@ def test_load_reads_config_and_sets_attributes(
 
     assert result is g
     assert "issue-tracker" in g.config
-    assert g.config["github"]["repo"] == "ytreister/gibr"
+    assert g.config["fake"]["foo"] == "bar"
 
 
-@patch.object(GibrConfig, "_find_config_file")
-def test_str_outputs_expected_for_github_config(mock_find_file, temp_config_file):
-    """__str__ should include GitHub details when tracker is github."""
-    mock_find_file.return_value = temp_config_file
+@patch("gibr.config.get_tracker_class")
+def test_get_tracker_details_str_with_describe_config(
+    mock_get_tracker_class, temp_config_file
+):
+    """_get_tracker_details_str should use describe_config() when available."""
     g = GibrConfig()
-    g.load()
-    output = str(g)
-    assert "Github:" in output
-    assert "ytreister/gibr" in output
-    assert "ghp_testtoken" in output
+    g.config = {
+        "issue-tracker": {"name": "fake"},
+        "fake": {"foo": "bar"},
+    }
+
+    fake_cls = MagicMock()
+    fake_cls.describe_config.return_value = "Description from tracker"
+    mock_get_tracker_class.return_value = fake_cls
+
+    result = g._get_tracker_details_str()
+    assert "Description from tracker" in result
+    mock_get_tracker_class.assert_called_once_with("fake")
 
 
-@patch.object(GibrConfig, "_find_config_file")
-def test_str_outputs_expected_for_jira_config(mock_find_file, tmp_path):
-    """__str__ should include Jira details when tracker is jira."""
-    cfg_content = dedent("""
-        [issue-tracker]
-        name = jira
-
-        [jira]
-        url = https://example.atlassian.net
-        project_key = TEST
-        user = alice
-        token = abc123
-    """)
-    cfg_file = tmp_path / ".gibrconfig"
-    cfg_file.write_text(cfg_content)
-    mock_find_file.return_value = cfg_file
+@patch("gibr.config.get_tracker_class")
+def test_get_tracker_details_str_no_describe_config(mock_get_tracker_class):
+    """_get_tracker_details_str should handle tracker without describe_config()."""
     g = GibrConfig()
-    g.load()
-    output = str(g)
-    assert "Jira:" in output
-    assert "example.atlassian.net" in output
-    assert "TEST" in output
+    g.config = {"issue-tracker": {"name": "generic"}}
+
+    fake_cls = MagicMock()
+    del fake_cls.describe_config  # ensure no describe_config method
+    fake_cls.__name__ = "GenericTracker"
+    mock_get_tracker_class.return_value = fake_cls
+
+    result = g._get_tracker_details_str()
+    assert "GenericTracker" in result
+    assert "(no describe_config()" in result
+
+
+@patch("gibr.config.get_tracker_class", side_effect=ValueError)
+def test_get_tracker_details_str_unknown_tracker(mock_get_tracker_class):
+    """_get_tracker_details_str should return 'Unknown tracker' message."""
+    g = GibrConfig()
+    g.config = {"issue-tracker": {"name": "unknown"}}
+    result = g._get_tracker_details_str()
+    assert "Unknown tracker: unknown" in result
+
+
+def test_str_includes_expected_sections():
+    """__str__ should include default and issue-tracker details."""
+    g = GibrConfig()
+    g.config = {
+        "DEFAULT": {"branch_name_format": "feat/{id}"},
+        "issue-tracker": {"name": "fake"},
+    }
+    with patch.object(g, "_get_tracker_details_str", return_value="Fake details"):
+        output = str(g)
+        assert "Branch Name Format" in output
+        assert "fake" in output
+        assert "Fake details" in output
