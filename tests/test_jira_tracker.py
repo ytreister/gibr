@@ -82,11 +82,10 @@ def test_get_issue_success(mock_jira_cls, mock_jira_client):
     assert issue.type == "Task"
 
 
-@patch("gibr.trackers.jira.error")
+@patch("gibr.trackers.jira.error", side_effect=click.Abort)
 @patch("gibr.trackers.jira.JIRA")
 def test_get_issue_not_found_with_project(mock_jira_cls, mock_error):
     """If project_key is set, show project-specific error message."""
-    mock_error.side_effect = click.Abort
     mock_client = mock_jira_cls.return_value
     mock_client.issue.side_effect = JIRAError(status_code=404, text="not found")
 
@@ -96,6 +95,22 @@ def test_get_issue_not_found_with_project(mock_jira_cls, mock_error):
         tracker.get_issue("999")
 
     mock_error.assert_called_once_with("Issue PROJ-999 not found in Jira project PROJ.")
+
+
+@patch("gibr.trackers.jira.error", side_effect=click.Abort)
+@patch("gibr.trackers.jira.JIRA")
+def test_get_issue_invalid_issue_id_provided_when_no_project_key(
+    mock_jira_cls, mock_error
+):
+    """If no project_key is set, show error about missing project key."""
+    mock_client = mock_jira_cls.return_value
+    mock_client.issue.side_effect = JIRAError(status_code=404, text="not found")
+
+    tracker = JiraTracker(url="http://jira", user="u", token="t", project_key=None)
+
+    with pytest.raises(click.Abort):
+        tracker.get_issue("999")
+    assert "Invalid issue id provided: 999" in mock_error.call_args[0][0]
 
 
 @patch("gibr.trackers.jira.error")
@@ -200,6 +215,30 @@ def test_configure_interactively(mock_prompt, mock_check_token):
         "user": "me@company.com",
         "token": "${MY_JIRA_TOKEN}",
     }
+
+
+@patch("gibr.trackers.jira.error")
+@patch.object(JiraTracker, "check_token")
+@patch(
+    "click.prompt",
+    side_effect=[
+        "https://company.atlassian.net",
+        "123INVALID",  # invalid project key
+    ],
+)
+def test_configure_interactively_invalid_project_key(
+    mock_prompt, mock_check_token, mock_error
+):
+    """Should call error() when project key is invalid."""
+    mock_error.side_effect = click.Abort  # simulate click.Abort() behavior
+
+    with pytest.raises(click.Abort):
+        JiraTracker.configure_interactively()
+
+    mock_error.assert_called_once_with(
+        "Invalid Jira project key: 123INVALID. "
+        "Must start with a letter and contain only A–Z, 0–9, or underscores."
+    )
 
 
 @pytest.mark.parametrize(
