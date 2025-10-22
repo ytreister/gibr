@@ -12,6 +12,8 @@
 `gibr` connects your Git workflow to your issue tracker — instantly creating consistent, descriptive branches.
 Fully configurable, and ready for any tracker or team setup.
 
+Currently supporting integration with GitHub, Jira and Gitlab.
+
 ## Usage
 ```bash
 # List open issues
@@ -91,7 +93,7 @@ The above command is equivalent to using the CLI as follows: `gibr 123` or
 
 ##### Flag order
 
-Short rule:
+The flag order when using the `git` alias version is different:
 
 ```bash
 # ✅ gibr CLI (flags before)
@@ -115,21 +117,26 @@ Run `gibr 123` (or `gibr create 123` or `git create 123`) to create a branch for
 `gibr` uses the `branch_name_format` from your `.gibrconfig` to determine the format for the branch.
 You can use the following placeholders: `{issuetype}`, `{issue}`, `{title}`.
 ##### Special case: Jira
-For jira, only the numeric portion of the issue is entered, the project key is stored in the `.gibrconfig` file, so for example:
+For Jira, you can specify a `project_key` in your configuration:
+```ini
+[jira]
+project_key=FOO
+```
+If you do this, you can choose to either specify the entire issue id or just the numerical portion (i.e. `FOO-123` or `123`
 ```bash
 # List issues
 $ gibr issues
 | Issue   | Type    | Title       |
 |---------|---------|-------------|
-| KAN-3   | Subtask | Subtask 2.1 |
-| KAN-2   | Story   | Task 2      |
-# Create branch for KAN-3
+| FOO-3   | Subtask | Subtask 2.1 |
+| FOO-2   | Story   | Task 2      |
+# Create branch for FOO-3
 $ gibr 3
-Generating branch name for issue KAN-3: Subtask 2.1
-Branch name: KAN-3-subtask-2-1
-✅  Created branch 'KAN-3-subtask-2-1' from main.
-✅  Checked out branch: KAN-3-subtask-2-1
-✅  Pushed branch 'KAN-3-subtask-2-1' to origin.
+Generating branch name for issue FOO-3: Subtask 2.1
+Branch name: FOO-3-subtask-2-1
+✅  Created branch 'FOO-3-subtask-2-1' from main.
+✅  Checked out branch: FOO-3-subtask-2-1
+✅  Pushed branch 'FOO-3-subtask-2-1' to origin.
 ```
 ### Optional flags
 - `--verbose` — enable debug-level logging for a command

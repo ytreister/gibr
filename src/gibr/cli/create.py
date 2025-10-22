@@ -4,6 +4,7 @@ import click
 
 from gibr.branch import BranchName
 from gibr.git import create_and_push_branch
+from gibr.notify import error
 
 
 @click.command("create")
@@ -13,6 +14,9 @@ def create(ctx, issue_number):
     """Generate a branch based on the issue number provided."""
     config = ctx.obj["config"]
     tracker = ctx.obj["tracker"]
+    if tracker.display_name != "Jira" and not issue_number.isdigit():
+        error(f"Issue number must be numeric for {tracker.display_name} issue tracker.")
+
     issue = tracker.get_issue(issue_number)
     branch_name = BranchName(config.config["DEFAULT"]["branch_name_format"]).generate(
         issue

@@ -49,7 +49,7 @@ def test_from_config_creates_instance(mock_jira_cls, mock_jira_client):
     assert tracker.client is mock_jira_client
 
 
-@pytest.mark.parametrize("missing_key", ["url", "user", "token", "project_key"])
+@pytest.mark.parametrize("missing_key", ["url", "user", "token"])
 def test_from_config_raises_valueerror_for_missing_keys(missing_key):
     """from_config should raise ValueError for each missing required key."""
     base_config = {
@@ -82,11 +82,10 @@ def test_get_issue_success(mock_jira_cls, mock_jira_client):
     assert issue.type == "Task"
 
 
-@patch("gibr.trackers.jira.error")
+@patch("gibr.trackers.jira.error", side_effect=click.Abort)
 @patch("gibr.trackers.jira.JIRA")
-def test_get_issue_not_found(mock_jira_cls, mock_error):
-    """Test issue not found handling in get_issue."""
-    mock_error.side_effect = click.Abort
+def test_get_issue_not_found_with_project(mock_jira_cls, mock_error):
+    """If project_key is set, show project-specific error message."""
     mock_client = mock_jira_cls.return_value
     mock_client.issue.side_effect = JIRAError(status_code=404, text="not found")
 
@@ -96,6 +95,38 @@ def test_get_issue_not_found(mock_jira_cls, mock_error):
         tracker.get_issue("999")
 
     mock_error.assert_called_once_with("Issue PROJ-999 not found in Jira project PROJ.")
+
+
+@patch("gibr.trackers.jira.error", side_effect=click.Abort)
+@patch("gibr.trackers.jira.JIRA")
+def test_get_issue_invalid_issue_id_provided_when_no_project_key(
+    mock_jira_cls, mock_error
+):
+    """If no project_key is set, show error about missing project key."""
+    mock_client = mock_jira_cls.return_value
+    mock_client.issue.side_effect = JIRAError(status_code=404, text="not found")
+
+    tracker = JiraTracker(url="http://jira", user="u", token="t", project_key=None)
+
+    with pytest.raises(click.Abort):
+        tracker.get_issue("999")
+    assert "Invalid issue id provided: 999" in mock_error.call_args[0][0]
+
+
+@patch("gibr.trackers.jira.error")
+@patch("gibr.trackers.jira.JIRA")
+def test_get_issue_not_found_without_project(mock_jira_cls, mock_error):
+    """If no project_key is set, show instance-wide error message."""
+    mock_error.side_effect = click.Abort
+    mock_client = mock_jira_cls.return_value
+    mock_client.issue.side_effect = JIRAError(status_code=404, text="not found")
+
+    tracker = JiraTracker(url="http://jira", user="u", token="t")
+
+    with pytest.raises(click.Abort):
+        tracker.get_issue("PROJ-999")
+
+    mock_error.assert_called_once_with("Issue PROJ-999 not found in Jira instance.")
 
 
 @patch("gibr.trackers.jira.JIRA")
@@ -184,3 +215,70 @@ def test_configure_interactively(mock_prompt, mock_check_token):
         "user": "me@company.com",
         "token": "${MY_JIRA_TOKEN}",
     }
+
+
+@patch("gibr.trackers.jira.error")
+@patch.object(JiraTracker, "check_token")
+@patch(
+    "click.prompt",
+    side_effect=[
+        "https://company.atlassian.net",
+        "123INVALID",  # invalid project key
+    ],
+)
+def test_configure_interactively_invalid_project_key(
+    mock_prompt, mock_check_token, mock_error
+):
+    """Should call error() when project key is invalid."""
+    mock_error.side_effect = click.Abort  # simulate click.Abort() behavior
+
+    with pytest.raises(click.Abort):
+        JiraTracker.configure_interactively()
+
+    mock_error.assert_called_once_with(
+        "Invalid Jira project key: 123INVALID. "
+        "Must start with a letter and contain only A–Z, 0–9, or underscores."
+    )
+
+
+@pytest.mark.parametrize(
+    "issue,expected",
+    [
+        ("FOO-123", True),
+        ("ABC_DEF-999", True),
+        ("FOO-0", True),
+        (" FOO-123 ", True),  # leading/trailing whitespace handled
+        ("FOO123", False),  # missing dash
+        ("FOO-", False),  # missing number
+        ("-123", False),  # missing prefix
+        ("foo-123", False),  # lowercase prefix invalid
+        ("FOO-ABC", False),  # numeric part must be digits
+        ("", False),
+        ("123-FOO", False),
+        ("Fii-FOO", False),  # first is uppercase, followed by lowercase
+    ],
+)
+def test_is_jira_issue(issue, expected):
+    """is_jira_issue should correctly validate Jira issue keys."""
+    assert JiraTracker.is_jira_issue(issue) is expected
+
+
+@pytest.mark.parametrize(
+    "key,expected",
+    [
+        ("PROJ", True),
+        ("ABC_DEF", True),
+        ("ABC_DEF_123", True),  # valid with mix of alpnanumeric and numbers
+        (" ABC_DEF_123 ", True),  # leading/trailing whitespace handled
+        ("A1B2", True),
+        ("_PROJ", False),  # must start with a letter
+        ("proj", False),  # lowercase invalid
+        ("123", False),  # must start with a letter
+        ("A-B", False),  # dash not allowed
+        ("", False),
+        ("A B", False),  # spaces not allowed
+    ],
+)
+def test_is_jira_project_key(key, expected):
+    """is_jira_project_key should correctly validate Jira project keys."""
+    assert JiraTracker.is_jira_project_key(key) is expected

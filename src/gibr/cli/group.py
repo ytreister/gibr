@@ -2,6 +2,8 @@
 
 import click
 
+from gibr.trackers.jira import JiraTracker
+
 
 class GibrGroup(click.Group):
     """Custom Click group."""
@@ -20,7 +22,9 @@ class GibrGroup(click.Group):
         # Treat numeric as 'create' (gibr 123 -> gibr create 123)
         for i, arg in enumerate(args):
             if not arg.startswith("--"):
-                if arg.isdigit() and arg not in self.commands:
+                if arg not in self.commands and (
+                    arg.isdigit() or JiraTracker.is_jira_issue(arg)
+                ):
                     args.insert(i, "create")
                 break
 
