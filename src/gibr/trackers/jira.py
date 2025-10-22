@@ -1,6 +1,7 @@
 """Jira issue tracker implementation."""
 
 import re
+from textwrap import dedent
 
 import click
 from jira import JIRA
@@ -50,7 +51,7 @@ class JiraTracker(IssueTracker):
 
         # Validate if provided
         if project_key and not cls.is_jira_project_key(project_key):
-            raise click.BadParameter(
+            error(
                 f"Invalid Jira project key: {project_key}. "
                 "Must start with a letter and contain only A–Z, 0–9, or underscores."
             )
@@ -95,6 +96,15 @@ class JiraTracker(IssueTracker):
 
     def get_issue(self, issue_id: str) -> dict:
         """Fetch issue details by issue number (using project key)."""
+        if issue_id.isdigit() and not self.project_key:
+            error(
+                dedent(f"""
+                Invalid issue id provided: {issue_id}
+                To use numeric issue IDs, you must add project key to your .gibrconfig:
+                [jira]
+                project_key = PROJ
+            """)
+            )
         issue_key = (
             f"{self.project_key}-{issue_id}"
             if issue_id.isdigit() and self.project_key
