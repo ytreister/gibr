@@ -64,7 +64,7 @@ def create_and_push_branch(branch_name: str, repo: Repo | None = None) -> None:
         push_result = origin.push(
             refspec=f"{branch_name}:{branch_name}", set_upstream=True
         )
-        logging.debug(push_result)
+        push_result.raise_if_error()
         success(f"Pushed branch '{branch_name}' to origin.")
         repo.close()
 
