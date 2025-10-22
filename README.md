@@ -1,10 +1,12 @@
 [![Tests](https://github.com/ytreister/gibr/actions/workflows/test.yml/badge.svg)](https://github.com/ytreister/gibr/actions/workflows/test.yml)
 [![Coverage](https://codecov.io/gh/ytreister/gibr/branch/main/graph/badge.svg)](https://codecov.io/gh/ytreister/gibr)
 [![PyPI version](https://img.shields.io/pypi/v/gibr.svg)](https://pypi.org/project/gibr/)
+[![Downloads](https://img.shields.io/pypi/dm/gibr.svg)](https://pypi.org/project/gibr/)
 [![Python versions](https://img.shields.io/pypi/pyversions/gibr.svg)](https://pypi.org/project/gibr/)
 [![License](https://img.shields.io/github/license/ytreister/gibr.svg)](https://github.com/ytreister/gibr/blob/main/LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/ytreister/gibr.svg)](https://github.com/ytreister/gibr/stargazers)
 [![GitHub issues](https://img.shields.io/github/issues/ytreister/gibr.svg)](https://github.com/ytreister/gibr/issues)
-[![GitHub pull requests](https://img.shields.io/github/issues-pr/ytreister/gibr.svg)](https://github.com/ytreister/gibr/pulls)
+
 
 # gibr
 > 🧩 **A smarter CLI for creating Git branches.**
@@ -148,4 +150,5 @@ See the [Roadmap](ROADMAP.md) for upcoming features and plans.
 See the [Contributions](CONTRIBUTIONS.md) guidelines if you would like to contribute.
 
 ## 💬 Feedback welcome!
-Found a bug or have a feature request? [Open an issue](https://github.com/ytreister/gibr/issues) or start a discussion.
+Found a bug or have a feature request? [Open an issue](https://github.com/ytreister/gibr/issues) or start a discussion.  
+If you find it useful, consider starring ⭐️ the repo — it really helps visibility!
