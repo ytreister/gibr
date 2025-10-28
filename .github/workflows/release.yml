@@ -19,7 +19,6 @@ jobs:
           python-version: "3.12"
       - run: pip install uv
       - run: uv build
-      - run: ls dist/
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -36,13 +35,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: dist-artifacts
-      - run: ls
+          path: dist
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - run: pip install uv
-      - run: uv publish --token $PYPI_TOKEN --index testpypi dist/*
+      - run: uv publish --token $PYPI_TOKEN --index testpypi
         env:
           PYPI_TOKEN: ${{ secrets.TEST_PYPI_TOKEN }}
   publish:
@@ -54,12 +53,13 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
-          name: dist-artifacts 
+          name: dist-artifacts
+          path: dist
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"    
-      - run: uv publish --token $PYPI_TOKEN dist/*
+      - run: uv publish --token $PYPI_TOKEN
         env:
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
       - name: Create GitHub Release
