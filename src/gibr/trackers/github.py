@@ -21,7 +21,10 @@ class GithubTracker(IssueTracker):
     def __init__(self, repo: str, token: str):
         """Construct GithubTracker object."""
         self.client = Github(auth=Auth.Token(token))
-        self.repo = self.client.get_repo(repo)
+        try:
+            self.repo = self.client.get_repo(repo)
+        except UnknownObjectException:
+            error(f"The specified repo could not be found: {repo}")
 
     @classmethod
     def configure_interactively(cls) -> dict:
