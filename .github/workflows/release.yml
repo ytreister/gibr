@@ -19,6 +19,7 @@ jobs:
           python-version: "3.12"
       - run: pip install uv
       - run: uv build
+      - run: ls dist/
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -35,6 +36,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: dist-artifacts
+      - run: ls
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
