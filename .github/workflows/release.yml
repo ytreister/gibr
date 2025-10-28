@@ -40,7 +40,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install uv
-      - run: uv publish --token $PYPI_TOKEN --index testpypi
+      - run: uv publish --token $PYPI_TOKEN --index testpypi dist/*
         env:
           PYPI_TOKEN: ${{ secrets.TEST_PYPI_TOKEN }}
   publish:
@@ -57,7 +57,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"    
-      - run: uv publish --token $PYPI_TOKEN
+      - run: uv publish --token $PYPI_TOKEN dist/*
         env:
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
       - name: Create GitHub Release
