@@ -12,7 +12,6 @@ x-setup-python: &setup-python
     uses: actions/setup-python@v5
     with:
       python-version: "3.12"
-  - run: pip install uv
 x-artifacts: &download-artifacts
   - name: Download build artifact
     uses: actions/download-artifact@v4
@@ -27,7 +26,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Needed so hatch-vcs can see Git tags
-      *setup-python      
+      - *setup-python
+      - run: pip install uv
       - run: uv build
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -41,7 +41,8 @@ jobs:
     needs: build  # Wait for build job if same run, or reuses uploaded artifact
     steps:
       - *download-artifacts
-      *setup-python
+      - *setup-python
+      - run: pip install uv
       - run: uv publish --token $PYPI_TOKEN --index testpypi
         env:
           PYPI_TOKEN: ${{ secrets.TEST_PYPI_TOKEN }}
