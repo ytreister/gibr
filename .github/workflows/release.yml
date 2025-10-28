@@ -6,18 +6,28 @@ on:
       - '[0-9]+.[0-9]+.[0-9]+'
   workflow_dispatch:  # Manual trigger for publish
 
+# Define reusable anchors to keep code DRY
+x-setup-python: &setup-python
+  - name: Setup Python
+    uses: actions/setup-python@v5
+    with:
+      python-version: "3.12"
+  - run: pip install uv
+x-artifacts: &download-artifacts
+  - name: Download build artifact
+    uses: actions/download-artifact@v4
+    with:
+      name: dist-artifacts
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    needs: [lint, format, test]
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Needed so hatch-vcs can see Git tags
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: pip install uv
+      *setup-python      
       - run: uv build
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -30,16 +40,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: build  # Wait for build job if same run, or reuses uploaded artifact
     steps:
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: dist-artifacts
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - run: pip install uv
-      - run: uv publish --token $PYPI_TOKEN --index-testpypi
+      - *download-artifacts
+      *setup-python
+      - run: uv publish --token $PYPI_TOKEN --index testpypi
         env:
           PYPI_TOKEN: ${{ secrets.TEST_PYPI_TOKEN }}
   publish:
@@ -47,17 +50,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     if: github.event_name == 'workflow_dispatch' # Only done manually
-
     steps:
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: dist-artifacts
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - run: pip install uv
+      - *download-artifacts    
+      - *setup-python        
       - run: uv publish --token $PYPI_TOKEN
         env:
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
