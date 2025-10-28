@@ -28,6 +28,23 @@ def mock_github_client(mock_github_repo):
     return mock_client
 
 
+@patch("gibr.trackers.github.error")
+@patch("gibr.trackers.github.Github")
+def test_init_repo_not_found(mock_github_cls, mock_error):
+    """GithubTracker.__init__ should call error() when repo is not found."""
+    mock_client = MagicMock()
+    mock_client.get_repo.side_effect = UnknownObjectException(404, "Not Found", None)
+    mock_github_cls.return_value = mock_client
+    mock_error.side_effect = click.Abort  # to simulate the behavior of error()
+
+    with pytest.raises(click.Abort):
+        GithubTracker(repo="invalid/repo", token="fake-token")
+
+    mock_error.assert_called_once_with(
+        "The specified repo could not be found: invalid/repo"
+    )
+
+
 @patch("gibr.trackers.github.Github")
 @patch("gibr.trackers.github.Auth")
 def test_from_config_creates_instance(mock_auth, mock_github):
