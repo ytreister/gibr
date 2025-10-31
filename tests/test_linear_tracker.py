@@ -57,7 +57,6 @@ def test_get_issue_success(mock_post):
                             "id": "abc123",
                             "identifier": "ENG-123",
                             "title": "Fix bug",
-                            "state": {"name": "In Progress"},
                         }
                     ]
                 }
@@ -70,7 +69,7 @@ def test_get_issue_success(mock_post):
     assert isinstance(issue, Issue)
     assert issue.id == "ENG-123"
     assert issue.title == "Fix bug"
-    assert issue.type == "In Progress"
+    assert issue.type == "issue"
 
 
 @patch("gibr.trackers.linear.error", side_effect=click.Abort)
@@ -194,7 +193,6 @@ def test_list_issues_returns_list(mock_post):
                         {
                             "identifier": "ENG-1",
                             "title": "Do something",
-                            "state": {"name": "Todo"},
                         }
                     ]
                 }
@@ -210,7 +208,7 @@ def test_list_issues_returns_list(mock_post):
     assert isinstance(issue, Issue)
     assert issue.id == "ENG-1"
     assert issue.title == "Do something"
-    assert issue.type == "Todo"
+    assert issue.type == "issue"
     mock_post.assert_called_once()
 
 
@@ -257,7 +255,6 @@ def test_graphql_request_handles_graphql_errors(mock_post, mock_error):
                     "id": "abc123",
                     "identifier": "ENG-45",
                     "title": "Add telemetry",
-                    "state": {"name": "Todo"},
                 }
             ]
         }

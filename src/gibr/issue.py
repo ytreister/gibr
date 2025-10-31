@@ -11,7 +11,7 @@ class Issue:
 
     id: int
     title: str
-    type: str
+    type: str = "issue"
 
     @property
     def sanitized_title(self) -> str:

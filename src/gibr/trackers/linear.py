@@ -130,7 +130,6 @@ class LinearTracker(IssueTracker):
                         id
                         identifier
                         title
-                        state { name }
                     }
                 }
             }
@@ -141,11 +140,7 @@ class LinearTracker(IssueTracker):
             error(f"Issue {team_key}-{number} not found in Linear.")
 
         issue = issues[0]
-        return Issue(
-            id=issue["identifier"],
-            title=issue["title"],
-            type=issue["state"]["name"],
-        )
+        return Issue(id=issue["identifier"], title=issue["title"])
 
     def list_issues(self) -> list[dict]:
         """List open issues from the Linear team (if configured)."""
@@ -160,7 +155,6 @@ class LinearTracker(IssueTracker):
                     nodes {
                         identifier
                         title
-                        state { name }
                     }
                 }
             }
@@ -169,11 +163,4 @@ class LinearTracker(IssueTracker):
         )
         data = self._graphql_request(query)
         issues = data.get("issues", {}).get("nodes", [])
-        return [
-            Issue(
-                id=i["identifier"],
-                title=i["title"],
-                type=i["state"]["name"],
-            )
-            for i in issues
-        ]
+        return [Issue(id=issue["identifier"], title=issue["title"]) for issue in issues]
