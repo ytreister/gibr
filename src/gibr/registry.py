@@ -3,15 +3,17 @@
 TRACKER_REGISTRY = {}
 
 
-def register_tracker(key, display_name, supported=True):
+def register_tracker(key, display_name, supported=True, numeric_issues=True):
     """Register a tracker class using this decorator."""
 
     def decorator(cls):
         cls.display_name = display_name
+        cls.numeric_issues = numeric_issues
         TRACKER_REGISTRY[key] = {
             "class": cls,
             "display_name": display_name,
             "supported": supported,
+            "numeric_issues": numeric_issues,
         }
         return cls
 

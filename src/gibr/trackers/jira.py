@@ -14,10 +14,7 @@ from gibr.registry import register_tracker
 from .base import IssueTracker
 
 
-@register_tracker(
-    key="jira",
-    display_name="Jira",
-)
+@register_tracker(key="jira", display_name="Jira", numeric_issues=False)
 class JiraTracker(IssueTracker):
     """Jira issue tracker."""
 

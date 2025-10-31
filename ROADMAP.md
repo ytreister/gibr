@@ -12,11 +12,12 @@ This roadmap outlines upcoming features and priorities for the gibr CLI.
 - [x] PyPI packaging and release automation
 - [x] Refactor to support plugin style integration with each third party tool
 - [x] Add GitLab issue tracker integration
+- [x] Support for Linear issue tracker
+- [x] CI/CD (Github Actions for building/publishing to PyPI)
 
 ## 🚧 Planned
-- [ ] Support for Linear issue tracker
 - [ ] Support for Monday.com issue tracker
-- [ ] CI/CD (Github Actions for building/publishing to PyPI)
+
 
 ## 🔮 Future
 - [ ] Add support for integration with git repo hosts (GitHub, GitLab, Bitbucket, etc.)
