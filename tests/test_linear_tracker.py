@@ -228,6 +228,25 @@ def test_graphql_request_non_200_triggers_error(mock_post, mock_error):
     assert "Linear API request failed" in mock_error.call_args[0][0]
 
 
+@patch("gibr.trackers.linear.error", side_effect=click.Abort)
+@patch("gibr.trackers.linear.requests.post")
+def test_graphql_request_handles_graphql_errors(mock_post, mock_error):
+    """_graphql_request should call error() if response contains GraphQL 'errors'."""
+    tracker = LinearTracker(token="t", team="ENG")
+
+    mock_post.return_value = MagicMock(
+        status_code=HTTPStatus.OK,
+        json=lambda: {"errors": [{"message": "Some GraphQL failure"}]},
+        text="mocked text",
+    )
+
+    with pytest.raises(click.Abort):
+        tracker._graphql_request("query { something }")
+
+    mock_error.assert_called_once()
+    assert "Some GraphQL failure" in str(mock_error.call_args[0][0])
+
+
 @patch.object(
     LinearTracker,
     "_graphql_request",
