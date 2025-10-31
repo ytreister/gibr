@@ -50,7 +50,6 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'workflow_dispatch' # Only done manually
     steps:
       - name: Download build artifact
         uses: actions/download-artifact@v4
