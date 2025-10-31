@@ -14,8 +14,12 @@
 `gibr` connects your Git workflow to your issue tracker — instantly creating consistent, descriptive branches.
 Fully configurable, and ready for any tracker or team setup.
 
-Currently supporting integration with GitHub, GitLab, Jira and Linear.
+Currently supporting integration with:  
 
+[![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com)
+[![GitLab](https://img.shields.io/badge/GitLab-330F63?logo=gitlab&logoColor=white)](https://gitlab.com)
+[![Jira](https://img.shields.io/badge/Jira-0052CC?logo=jira&logoColor=white)](https://www.atlassian.com/software/jira)
+[![Linear](https://img.shields.io/badge/Linear-5E6AD2?logo=linear&logoColor=white)](https://linear.app)
 ## Usage
 ```bash
 # List open issues
