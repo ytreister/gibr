@@ -69,20 +69,9 @@ class GitlabTracker(IssueTracker):
             issue = self.project.issues.get(issue_id)
         except GitlabGetError:
             error(f"Issue #{issue_id} not found in GitLab project {self.project_name}.")
-        return Issue(
-            id=issue.iid,
-            title=issue.title,
-            type="issue",
-        )
+        return Issue(id=issue.iid, title=issue.title)
 
     def list_issues(self) -> list[dict]:
         """List all open issues in the project."""
         issues = self.project.issues.list(state="opened", all=True)
-        return [
-            Issue(
-                id=issue.iid,
-                title=issue.title,
-                type="issue",
-            )
-            for issue in issues
-        ]
+        return [Issue(id=issue.iid, title=issue.title) for issue in issues]
