@@ -212,3 +212,46 @@ def test_list_issues_returns_list(mock_post):
     assert issue.title == "Do something"
     assert issue.type == "Todo"
     mock_post.assert_called_once()
+
+
+@patch("gibr.trackers.linear.error", side_effect=click.Abort)
+@patch("gibr.trackers.linear.requests.post")
+def test_graphql_request_non_200_triggers_error(mock_post, mock_error):
+    """_graphql_request should call error() if status != 200."""
+    tracker = LinearTracker(token="t")
+    mock_post.return_value = make_response(status=HTTPStatus.BAD_REQUEST)
+
+    with pytest.raises(click.Abort):
+        tracker._graphql_request("query")
+
+    mock_error.assert_called_once()
+    assert "Linear API request failed" in mock_error.call_args[0][0]
+
+
+@patch.object(
+    LinearTracker,
+    "_graphql_request",
+    return_value={
+        "issues": {
+            "nodes": [
+                {
+                    "id": "abc123",
+                    "identifier": "ENG-45",
+                    "title": "Add telemetry",
+                    "state": {"name": "Todo"},
+                }
+            ]
+        }
+    },
+)
+def test_get_issue_with_numeric_id_and_team_calls_graphql_with_correct_vars(
+    mock_graphql,
+):
+    """get_issue should derive team_key and number correctly for numeric ID."""
+    tracker = LinearTracker(token="t", team="ENG")
+
+    tracker.get_issue("45")
+
+    # Assert correct call to _graphql_request
+    mock_graphql.assert_called_once()
+    assert mock_graphql.call_args[0][1] == {"teamKey": "ENG", "number": 45}
