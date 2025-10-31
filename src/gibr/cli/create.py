@@ -14,7 +14,7 @@ def create(ctx, issue_number):
     """Generate a branch based on the issue number provided."""
     config = ctx.obj["config"]
     tracker = ctx.obj["tracker"]
-    if tracker.display_name != "Jira" and not issue_number.isdigit():
+    if tracker.numeric_issues and not issue_number.isdigit():
         error(f"Issue number must be numeric for {tracker.display_name} issue tracker.")
 
     issue = tracker.get_issue(issue_number)

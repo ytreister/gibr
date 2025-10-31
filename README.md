@@ -14,7 +14,7 @@
 `gibr` connects your Git workflow to your issue tracker — instantly creating consistent, descriptive branches.
 Fully configurable, and ready for any tracker or team setup.
 
-Currently supporting integration with GitHub, Jira and Gitlab.
+Currently supporting integration with GitHub, GitLab, Jira and Linear.
 
 ## Usage
 ```bash
@@ -61,7 +61,7 @@ Which issue tracker do you use?
 1. GitHub
 2. GitLab
 3. Jira
-4. Linear (coming soon)
+4. Linear
 5. Monday.com (coming soon)
 
 Select a number (1, 2, 3, 4, 5) [1]: 1
