@@ -121,7 +121,11 @@ Run `gibr issues` (or `git issues`) to view open issues in the issue tracker you
 Run `gibr 123` (or `gibr create 123` or `git create 123`) to create a branch for the cooresponding issue number.
 ##### Branch naming convention
 `gibr` uses the `branch_name_format` from your `.gibrconfig` to determine the format for the branch.
-You can use the following placeholders: `{issuetype}`, `{issue}`, `{title}`.
+You can use the following placeholders:  
+- `{issuetype}`
+- `{issue}`
+- `{title}`
+- `{assignee}` (Note: If issue does not have an assignee and your branch name format contains assignee, you will not be able to create the branch)
 ##### Special case: Jira
 For Jira, you can specify a `project_key` in your configuration:
 ```ini
