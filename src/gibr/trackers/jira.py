@@ -1,5 +1,6 @@
 """Jira issue tracker implementation."""
 
+import logging
 import re
 from textwrap import dedent
 
@@ -7,7 +8,6 @@ import click
 from jira import JIRA
 from jira.exceptions import JIRAError
 from slugify import slugify
-import logging
 
 from gibr.issue import Issue
 from gibr.notify import error
