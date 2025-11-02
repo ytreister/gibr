@@ -19,7 +19,6 @@ class GitlabTracker(IssueTracker):
 
     def __init__(self, url: str, token: str, project: str):
         """Initialize GitlabTracker with connection to specified project."""
-        super().__init__()
         self.url = url
         self.project_name = project
         try:
