@@ -21,6 +21,8 @@ def mock_jira_client():
     mock_issue.fields.summary = "Implement feature X"
     mock_issue.fields.issuetype = MagicMock()
     mock_issue.fields.issuetype.name = "Task"
+    mock_issue.fields.assignee = MagicMock()
+    mock_issue.fields.assignee.name = "username"
 
     client.issue.return_value = mock_issue
     client.search_issues.return_value = [mock_issue]

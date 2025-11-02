@@ -4,9 +4,10 @@ import re
 from textwrap import dedent
 
 import click
-import slugify
 from jira import JIRA
 from jira.exceptions import JIRAError
+from slugify import slugify
+import logging
 
 from gibr.issue import Issue
 from gibr.notify import error
@@ -94,20 +95,26 @@ class JiraTracker(IssueTracker):
 
     def _get_assignee(self, issue):
         """Return a slug-safe username-like string."""
+        logging.debug("Getting Jira assignee")
         assignee = issue.fields.assignee
+
         if not assignee:
+            logging.debug("No assignee for this issue")
             return None
 
         # Prefer real username on self-hosted Jira
         if getattr(assignee, "name", None):
+            logging.debug("assignee name found, using it")
             return slugify(assignee.name)
 
         # Fallback to something deterministic on Cloud
         if getattr(assignee, "displayName", None):
+            logging.debug("displayName found, using it")
             return slugify(assignee.displayName)
 
         # Last resort: use part of the accountId (not pretty, but stable)
         if getattr(assignee, "accountId", None):
+            logging.debug("accountId found, using it")
             return re.sub(r"[^a-z0-9]+", "", assignee.accountId.lower())[:12]
 
         return None
