@@ -2,6 +2,7 @@
 
 import click
 from github import Auth, Github
+from github import Issue as GithubIssue
 from github.GithubException import UnknownObjectException
 
 from gibr.issue import Issue
@@ -53,6 +54,10 @@ class GithubTracker(IssueTracker):
         Repo               : {config.get("repo")}
         Token              : {config.get("token")}"""
 
+    def _get_assignee(self, issue: GithubIssue):
+        """Get issue assignee."""
+        return issue.assignee.login if issue.assignee else None
+
     def get_issue(self, issue_id: str) -> dict:
         """Fetch issue details by issue number."""
         try:
@@ -60,15 +65,16 @@ class GithubTracker(IssueTracker):
         except UnknownObjectException:
             error(f"Issue #{issue_id} not found in repository.")
         return Issue(
-            id=issue.number,
-            title=issue.title,
+            id=issue.number, title=issue.title, assignee=self._get_assignee(issue)
         )
 
     def list_issues(self) -> list[dict]:
         """List open issues from the GitHub repository."""
         issues = self.repo.get_issues(state="open")
         return [
-            Issue(id=issue.number, title=issue.title)
+            Issue(
+                id=issue.number, title=issue.title, assignee=self._get_assignee(issue)
+            )
             for issue in issues
             if getattr(issue, "pull_request", None) is None
         ]

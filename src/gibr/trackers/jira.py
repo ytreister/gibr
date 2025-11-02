@@ -4,6 +4,7 @@ import re
 from textwrap import dedent
 
 import click
+import slugify
 from jira import JIRA
 from jira.exceptions import JIRAError
 
@@ -91,6 +92,26 @@ class JiraTracker(IssueTracker):
         User               : {config.get("user")}
         Token              : {config.get("token")}"""
 
+    def _get_assignee(self, issue):
+        """Return a slug-safe username-like string."""
+        assignee = issue.fields.assignee
+        if not assignee:
+            return None
+
+        # Prefer real username on self-hosted Jira
+        if getattr(assignee, "name", None):
+            return slugify(assignee.name)
+
+        # Fallback to something deterministic on Cloud
+        if getattr(assignee, "displayName", None):
+            return slugify(assignee.displayName)
+
+        # Last resort: use part of the accountId (not pretty, but stable)
+        if getattr(assignee, "accountId", None):
+            return re.sub(r"[^a-z0-9]+", "", assignee.accountId.lower())[:12]
+
+        return None
+
     def get_issue(self, issue_id: str) -> dict:
         """Fetch issue details by issue number (using project key)."""
         if issue_id.isdigit() and not self.project_key:
@@ -121,6 +142,7 @@ class JiraTracker(IssueTracker):
             id=issue.key,
             title=issue.fields.summary,
             type=issue.fields.issuetype.name,
+            assignee=self._get_assignee(issue),
         )
 
     def list_issues(self) -> list[dict]:
@@ -134,6 +156,7 @@ class JiraTracker(IssueTracker):
                 id=issue.key,
                 title=issue.fields.summary,
                 type=issue.fields.issuetype.name,
+                assignee=self._get_assignee(issue),
             )
             for issue in issues
         ]

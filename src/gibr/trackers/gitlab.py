@@ -19,6 +19,7 @@ class GitlabTracker(IssueTracker):
 
     def __init__(self, url: str, token: str, project: str):
         """Initialize GitlabTracker with connection to specified project."""
+        super().__init__()
         self.url = url
         self.project_name = project
         try:
@@ -63,15 +64,35 @@ class GitlabTracker(IssueTracker):
             Project            : {config.get("project")}
             Token              : {config.get("token")}"""
 
+    def _get_assignee(self, issue):
+        """Get issue assignee."""
+        # Multi-assignee first (newer GitLab versions)
+        if getattr(issue, "assignees", None):
+            assignees = issue.assignees
+            if isinstance(assignees, list) and len(assignees) > 0:
+                return assignees[0].get("username")
+
+        # Fallback: single-assignee field (older versions)
+        if getattr(issue, "assignee", None):
+            return issue.assignee.get("username")
+
+        # No assignee found
+        return None
+
     def get_issue(self, issue_id: str) -> dict:
         """Fetch issue details by issue id."""
         try:
             issue = self.project.issues.get(issue_id)
         except GitlabGetError:
             error(f"Issue #{issue_id} not found in GitLab project {self.project_name}.")
-        return Issue(id=issue.iid, title=issue.title)
+        return Issue(
+            id=issue.iid, title=issue.title, assignee=self._get_assignee(issue)
+        )
 
     def list_issues(self) -> list[dict]:
         """List all open issues in the project."""
         issues = self.project.issues.list(state="opened", all=True)
-        return [Issue(id=issue.iid, title=issue.title) for issue in issues]
+        return [
+            Issue(id=issue.iid, title=issue.title, assignee=self._get_assignee(issue))
+            for issue in issues
+        ]
