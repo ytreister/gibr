@@ -21,6 +21,8 @@ def mock_jira_client():
     mock_issue.fields.summary = "Implement feature X"
     mock_issue.fields.issuetype = MagicMock()
     mock_issue.fields.issuetype.name = "Task"
+    mock_issue.fields.assignee = MagicMock()
+    mock_issue.fields.assignee.name = "username"
 
     client.issue.return_value = mock_issue
     client.search_issues.return_value = [mock_issue]
@@ -282,3 +284,38 @@ def test_is_jira_issue(issue, expected):
 def test_is_jira_project_key(key, expected):
     """is_jira_project_key should correctly validate Jira project keys."""
     assert JiraTracker.is_jira_project_key(key) is expected
+
+
+@pytest.mark.parametrize(
+    "assignee_attrs,expected",
+    [
+        (None, None),
+        (
+            {"name": "The Name", "displayName": "Jane Doe", "accountId": "abc"},
+            "the-name",
+        ),
+        ({"name": None, "displayName": "Jane Doe", "accountId": "abc"}, "jane-doe"),
+        ({"name": None, "displayName": None, "accountId": "Account Id"}, "accountid"),
+        ({"name": None, "displayName": None, "accountId": None}, None),
+    ],
+)
+@patch("gibr.trackers.jira.JIRA")
+def test_get_assignee_variants(
+    mock_jira_cls, mock_jira_client, assignee_attrs, expected
+):
+    """_get_assignee should correctly select or sanitize the assignee field."""
+    mock_jira_cls.return_value = mock_jira_client
+    tracker = JiraTracker(url="http://jira", user="u", token="t")
+
+    mock_issue = MagicMock()
+    mock_issue.fields = MagicMock()
+
+    if assignee_attrs is None:
+        mock_issue.fields.assignee = None
+    else:
+        mock_issue.fields.assignee = MagicMock()
+        for k, v in assignee_attrs.items():
+            setattr(mock_issue.fields.assignee, k, v)
+
+    result = tracker._get_assignee(mock_issue)
+    assert result == expected

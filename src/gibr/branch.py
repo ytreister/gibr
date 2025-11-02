@@ -15,6 +15,7 @@ class BranchName:
             "issuetype": issue.type,
             "issue": issue.id,
             "title": issue.sanitized_title,
+            "assignee": issue.assignee,
         }
 
         # Simple Python str.format expansion

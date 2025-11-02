@@ -18,6 +18,14 @@ def create(ctx, issue_number):
         error(f"Issue number must be numeric for {tracker.display_name} issue tracker.")
 
     issue = tracker.get_issue(issue_number)
+    branch_name_format = config.config["DEFAULT"]["branch_name_format"]
+
+    # TODO In the future, instead of setting an error here, we should ask if
+    # they want to assign the issue to the current user
+    if not issue.assignee and "{assignee}" in branch_name_format:
+        error(
+            "Can't create branch, issue has no assignee and branch format requires it"
+        )
     branch_name = BranchName(config.config["DEFAULT"]["branch_name_format"]).generate(
         issue
     )

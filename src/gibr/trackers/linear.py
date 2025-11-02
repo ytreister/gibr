@@ -101,6 +101,14 @@ class LinearTracker(IssueTracker):
             error(f"Linear API returned errors: {data['errors']}")
         return data.get("data", {})
 
+    def _get_assignee(self, issue):
+        """Get issue assignee."""
+        return (
+            issue.get("assignee", {}).get("displayName")
+            if issue.get("assignee")
+            else None
+        )
+
     def get_issue(self, issue_id: str) -> dict:
         """Fetch issue details by issue key (TEAM-123) or number."""
         if issue_id.isdigit():
@@ -130,6 +138,9 @@ class LinearTracker(IssueTracker):
                         id
                         identifier
                         title
+                        assignee {
+                            displayName
+                        }
                     }
                 }
             }
@@ -140,7 +151,11 @@ class LinearTracker(IssueTracker):
             error(f"Issue {team_key}-{number} not found in Linear.")
 
         issue = issues[0]
-        return Issue(id=issue["identifier"], title=issue["title"])
+        return Issue(
+            id=issue["identifier"],
+            title=issue["title"],
+            assignee=self._get_assignee(issue),
+        )
 
     def list_issues(self) -> list[dict]:
         """List open issues from the Linear team (if configured)."""
@@ -155,6 +170,9 @@ class LinearTracker(IssueTracker):
                     nodes {
                         identifier
                         title
+                        assignee {
+                            displayName
+                        }
                     }
                 }
             }
@@ -163,4 +181,11 @@ class LinearTracker(IssueTracker):
         )
         data = self._graphql_request(query)
         issues = data.get("issues", {}).get("nodes", [])
-        return [Issue(id=issue["identifier"], title=issue["title"]) for issue in issues]
+        return [
+            Issue(
+                id=issue["identifier"],
+                title=issue["title"],
+                assignee=self._get_assignee(issue),
+            )
+            for issue in issues
+        ]

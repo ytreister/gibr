@@ -1,11 +1,13 @@
 """Jira issue tracker implementation."""
 
+import logging
 import re
 from textwrap import dedent
 
 import click
 from jira import JIRA
 from jira.exceptions import JIRAError
+from slugify import slugify
 
 from gibr.issue import Issue
 from gibr.notify import error
@@ -91,6 +93,32 @@ class JiraTracker(IssueTracker):
         User               : {config.get("user")}
         Token              : {config.get("token")}"""
 
+    def _get_assignee(self, issue):
+        """Return a slug-safe username-like string."""
+        logging.debug("Getting Jira assignee")
+        assignee = issue.fields.assignee
+
+        if not assignee:
+            logging.debug("No assignee for this issue")
+            return None
+
+        # Prefer real username on self-hosted Jira
+        if getattr(assignee, "name", None):
+            logging.debug("assignee name found, using it")
+            return slugify(assignee.name)
+
+        # Fallback to something deterministic on Cloud
+        if getattr(assignee, "displayName", None):
+            logging.debug("displayName found, using it")
+            return slugify(assignee.displayName)
+
+        # Last resort: use part of the accountId (not pretty, but stable)
+        if getattr(assignee, "accountId", None):
+            logging.debug("accountId found, using it")
+            return re.sub(r"[^a-z0-9]+", "", assignee.accountId.lower())[:12]
+
+        return None
+
     def get_issue(self, issue_id: str) -> dict:
         """Fetch issue details by issue number (using project key)."""
         if issue_id.isdigit() and not self.project_key:
@@ -121,6 +149,7 @@ class JiraTracker(IssueTracker):
             id=issue.key,
             title=issue.fields.summary,
             type=issue.fields.issuetype.name,
+            assignee=self._get_assignee(issue),
         )
 
     def list_issues(self) -> list[dict]:
@@ -134,6 +163,7 @@ class JiraTracker(IssueTracker):
                 id=issue.key,
                 title=issue.fields.summary,
                 type=issue.fields.issuetype.name,
+                assignee=self._get_assignee(issue),
             )
             for issue in issues
         ]

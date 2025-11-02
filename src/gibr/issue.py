@@ -11,6 +11,7 @@ class Issue:
 
     id: int
     title: str
+    assignee: str
     type: str = "issue"
 
     @property

@@ -138,3 +138,28 @@ def test_gitlab_configure_interactively(mock_prompt, mock_check_token):
         "project": "group/proj",
         "token": "${MY_GITLAB_TOKEN}",
     }
+
+
+@patch("gibr.trackers.gitlab.gitlab.Gitlab")
+def test_get_assignee_multiple_assignees(mock_gitlab_cls, mock_gitlab_client):
+    """_get_assignee should return first username from multiple assignees."""
+    mock_gitlab_cls.return_value = mock_gitlab_client
+    tracker = GitlabTracker(url="https://gitlab.com", token="tok", project="group/proj")
+
+    mock_issue = MagicMock()
+    mock_issue.assignees = [{"username": "alice"}, {"username": "bob"}]
+    result = tracker._get_assignee(mock_issue)
+    assert result == "alice"
+
+
+@patch("gibr.trackers.gitlab.gitlab.Gitlab")
+def test_get_assignee_no_assignees(mock_gitlab_cls, mock_gitlab_client):
+    """_get_assignee should return None when no assignee info exists."""
+    mock_gitlab_cls.return_value = mock_gitlab_client
+    tracker = GitlabTracker(url="https://gitlab.com", token="tok", project="group/proj")
+
+    mock_issue = MagicMock()
+    mock_issue.assignees = None
+    mock_issue.assignee = None
+    result = tracker._get_assignee(mock_issue)
+    assert result is None

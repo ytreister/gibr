@@ -12,6 +12,11 @@ class IssueTracker(ABC):
     """Abstract base class for all issue trackers."""
 
     @abstractmethod
+    def _get_assignee(self, issue):
+        """Return a slug-safe assignee identifier string, or None."""
+        pass
+
+    @abstractmethod
     def get_issue(self, issue_id: str) -> dict:
         """Return issue details as a dictionary."""
         pass

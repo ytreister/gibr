@@ -15,6 +15,10 @@ def issues(ctx):
     if not issues:
         warning("No open issues found.")
         return
-    table = [[issue.id, issue.type, issue.title] for issue in issues]
+    table = [[issue.id, issue.type, issue.title, issue.assignee] for issue in issues]
 
-    click.echo(tabulate(table, headers=["Issue", "Type", "Title"], tablefmt="github"))
+    click.echo(
+        tabulate(
+            table, headers=["Issue", "Type", "Title", "Assignee"], tablefmt="github"
+        )
+    )
