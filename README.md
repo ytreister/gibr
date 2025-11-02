@@ -21,20 +21,20 @@ Currently supporting integration with:
 [![Jira](https://img.shields.io/badge/Jira-0052CC?logo=jira&logoColor=white)](https://www.atlassian.com/software/jira)
 [![Linear](https://img.shields.io/badge/Linear-5E6AD2?logo=linear&logoColor=white)](https://linear.app)
 ## Usage
-```bash
+```
 # List open issues
 $ gibr issues
-|   Issue | Type   | Title                                 |
-|---------|--------|---------------------------------------|
-|     123 | issue  | Add support for OAuth2 / login (beta) |
-|      97 | issue  | Add support for gitlab                |
+|   Issue | Type   | Title                                 | Assignee   |
+|---------|--------|---------------------------------------|------------|
+|     123 | issue  | Add support for OAuth2 / login (beta) | ytreister  |
+|      97 | issue  | Add support for gitlab                |            |
 # Decide which issue to work
 $ gibr 123
 Generating branch name for issue #123: Add support for OAuth2 / login (beta)
-Branch name: issue/123/add-support-for-oauth2-login-beta
-✅  Created branch 'issue/123/add-support-for-oauth2-login-beta' from main.
-✅  Checked out branch: issue/123/add-support-for-oauth2-login-beta
-✅  Pushed branch 'issue/123/add-support-for-oauth2-login-beta' to origin.
+Branch name: ytreister/issue/123/add-support-for-oauth2-login-beta
+✅  Created branch 'ytreister/issue/123/add-support-for-oauth2-login-beta' from main.
+✅  Checked out branch: ytreister/issue/123/add-support-for-oauth2-login-beta
+✅  Pushed branch 'ytreister/issue/123/add-support-for-oauth2-login-beta' to origin.
 ```
 
 ## 🚀 Quick start
@@ -136,10 +136,10 @@ If you do this, you can choose to either specify the entire issue id or just the
 ```bash
 # List issues
 $ gibr issues
-| Issue   | Type    | Title       |
-|---------|---------|-------------|
-| FOO-3   | Subtask | Subtask 2.1 |
-| FOO-2   | Story   | Task 2      |
+| Issue   | Type    | Title       | Assignee   |
+|---------|---------|-------------|------------|
+| FOO-3   | Subtask | Subtask 2.1 | ytreister  |
+| FOO-2   | Story   | Task 2      |            |
 # Create branch for FOO-3
 $ gibr 3
 Generating branch name for issue FOO-3: Subtask 2.1
