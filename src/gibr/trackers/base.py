@@ -11,13 +11,6 @@ from gibr.notify import party, warning
 class IssueTracker(ABC):
     """Abstract base class for all issue trackers."""
 
-    def __init__(self):
-        """Initialize base tracker attributes.
-
-        Subclasses can override and should call super().__init__().
-        """
-        self.current_user = None
-
     @abstractmethod
     def _get_assignee(self, issue):
         """Return a slug-safe assignee identifier string, or None."""
