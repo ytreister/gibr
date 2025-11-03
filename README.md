@@ -174,7 +174,7 @@ Branch name: FOO-3-subtask-2-1
 See the [Roadmap](ROADMAP.md) for upcoming features and plans.
 
 ## Opensource contributions
-See the [Contributions](CONTRIBUTIONS.md) guidelines if you would like to contribute.
+See the [Contributing](CONTRIBUTING.md) guidelines if you would like to contribute.
 
 ## 💬 Feedback welcome!
 Found a bug or have a feature request? [Open an issue](https://github.com/ytreister/gibr/issues) or start a discussion.  
