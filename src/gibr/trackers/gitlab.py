@@ -1,8 +1,6 @@
 """GitLab issue tracker integration."""
 
 import click
-import gitlab
-from gitlab.exceptions import GitlabGetError
 
 from gibr.issue import Issue
 from gibr.notify import error
@@ -19,10 +17,17 @@ class GitlabTracker(IssueTracker):
 
     def __init__(self, url: str, token: str, project: str):
         """Initialize GitlabTracker with connection to specified project."""
+        try:
+            from gitlab import Gitlab
+            from gitlab.exceptions import GitlabGetError
+
+            self.GitlabGetError = GitlabGetError
+        except ImportError:
+            self.import_error("python-gitlab", "gitlab")
         self.url = url
         self.project_name = project
         try:
-            self.client = gitlab.Gitlab(url, private_token=token)
+            self.client = Gitlab(url, private_token=token)
             self.project = self.client.projects.get(project)
         except Exception as e:
             raise ValueError(f"Failed to connect to GitLab: {e}")
@@ -82,7 +87,7 @@ class GitlabTracker(IssueTracker):
         """Fetch issue details by issue id."""
         try:
             issue = self.project.issues.get(issue_id)
-        except GitlabGetError:
+        except self.GitlabGetError:
             error(f"Issue #{issue_id} not found in GitLab project {self.project_name}.")
         return Issue(
             id=issue.iid, title=issue.title, assignee=self._get_assignee(issue)

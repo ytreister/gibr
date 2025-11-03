@@ -29,7 +29,7 @@ def mock_github_client(mock_github_repo):
 
 
 @patch("gibr.trackers.github.error")
-@patch("gibr.trackers.github.Github")
+@patch("github.Github")
 def test_init_repo_not_found(mock_github_cls, mock_error):
     """GithubTracker.__init__ should call error() when repo is not found."""
     mock_client = MagicMock()
@@ -45,8 +45,8 @@ def test_init_repo_not_found(mock_github_cls, mock_error):
     )
 
 
-@patch("gibr.trackers.github.Github")
-@patch("gibr.trackers.github.Auth")
+@patch("github.Github")
+@patch("github.Auth")
 def test_from_config_creates_instance(mock_auth, mock_github):
     """from_config should create GithubTracker with correct params."""
     mock_client = MagicMock()
@@ -78,7 +78,7 @@ def test_from_config_raises_valueerror_for_missing_keys(missing_key):
     assert f"Missing key in 'github' config: {missing_key}" in str(excinfo.value)
 
 
-@patch("gibr.trackers.github.Github")
+@patch("github.Github")
 def test_get_issue_success(mock_github_cls, mock_github_client, mock_github_repo):
     """Test successful get_issue returns Issue object with correct fields."""
     issue_number = 123
@@ -95,7 +95,7 @@ def test_get_issue_success(mock_github_cls, mock_github_client, mock_github_repo
 
 
 @patch("gibr.trackers.github.error")
-@patch("gibr.trackers.github.Github")
+@patch("github.Github")
 def test_get_issue_not_found(mock_github_cls, mock_error):
     """Test that click.Abort is raised when issue is not found."""
     mock_error.side_effect = click.Abort
@@ -110,7 +110,7 @@ def test_get_issue_not_found(mock_github_cls, mock_error):
     mock_error.assert_called_once_with("Issue #999 not found in repository.")
 
 
-@patch("gibr.trackers.github.Github")
+@patch("github.Github")
 def test_list_issues_returns_list(
     mock_github_cls, mock_github_client, mock_github_repo
 ):
@@ -127,7 +127,7 @@ def test_list_issues_returns_list(
     assert issues[0].title == "Fix login bug"
 
 
-@patch("gibr.trackers.github.Github")
+@patch("github.Github")
 def test_list_issues_excludes_pull_requests(
     mock_github_cls, mock_github_client, mock_github_repo
 ):
@@ -183,3 +183,13 @@ def test_github_configure_interactively(mock_prompt, mock_check_token):
         "repo": "user/repo",
         "token": "${MY_GITHUB_TOKEN}",
     }
+
+
+@patch.object(GithubTracker, "import_error", side_effect=SystemExit)
+def test_import_error_called_when_github_missing(mock_import_error):
+    """Should call import_error() when python-gitlab is not installed."""
+    with patch("builtins.__import__", side_effect=ImportError):
+        with pytest.raises(SystemExit):
+            GithubTracker(repo="user/repo", token="tok")
+
+    mock_import_error.assert_called_once_with("PyGithub", "github")

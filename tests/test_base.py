@@ -31,3 +31,18 @@ def test_check_token_missing(mock_warning, capsys):
     out = capsys.readouterr().out
     assert "export DUMMY_TOKEN" in out
     assert "setx DUMMY_TOKEN" in out
+
+
+@patch("gibr.trackers.base.error")
+def test_import_error_message(mock_error):
+    """Should show proper error message and install commands."""
+    DummyTracker.import_error("python-gitlab", "gitlab")
+
+    mock_error.assert_called_once()
+    msg = mock_error.call_args[0][0]
+
+    # Check key parts of message
+    assert "python-gitlab not installed." in msg
+    assert "Install optional dependency with:" in msg
+    assert "pip install gibr[gitlab]" in msg
+    assert "uv pip install gibr[gitlab]" in msg

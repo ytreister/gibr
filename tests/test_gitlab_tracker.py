@@ -28,7 +28,7 @@ def mock_gitlab_client(mock_gitlab_project):
     return mock_client
 
 
-@patch("gibr.trackers.gitlab.gitlab.Gitlab")
+@patch("gitlab.Gitlab")
 def test_from_config_creates_instance(
     mock_gitlab_cls, mock_gitlab_client, mock_gitlab_project
 ):
@@ -63,7 +63,7 @@ def test_from_config_raises_valueerror_for_missing_keys(missing_key):
     assert f"Missing key in 'gitlab' config: {missing_key}" in str(excinfo.value)
 
 
-@patch("gibr.trackers.gitlab.gitlab.Gitlab")
+@patch("gitlab.Gitlab")
 def test_get_issue_success(mock_gitlab_cls, mock_gitlab_client, mock_gitlab_project):
     """Test successful get_issue returns Issue object with correct fields."""
     mock_gitlab_cls.return_value = mock_gitlab_client
@@ -78,7 +78,7 @@ def test_get_issue_success(mock_gitlab_cls, mock_gitlab_client, mock_gitlab_proj
 
 
 @patch("gibr.trackers.gitlab.error")
-@patch("gibr.trackers.gitlab.gitlab.Gitlab")
+@patch("gitlab.Gitlab")
 def test_get_issue_not_found(
     mock_gitlab_cls, mock_error, mock_gitlab_client, mock_gitlab_project
 ):
@@ -94,7 +94,7 @@ def test_get_issue_not_found(
     )
 
 
-@patch("gibr.trackers.gitlab.gitlab.Gitlab")
+@patch("gitlab.Gitlab")
 def test_list_issues_returns_list(
     mock_gitlab_cls, mock_gitlab_client, mock_gitlab_project
 ):
@@ -140,7 +140,7 @@ def test_gitlab_configure_interactively(mock_prompt, mock_check_token):
     }
 
 
-@patch("gibr.trackers.gitlab.gitlab.Gitlab")
+@patch("gitlab.Gitlab")
 def test_get_assignee_multiple_assignees(mock_gitlab_cls, mock_gitlab_client):
     """_get_assignee should return first username from multiple assignees."""
     mock_gitlab_cls.return_value = mock_gitlab_client
@@ -152,7 +152,7 @@ def test_get_assignee_multiple_assignees(mock_gitlab_cls, mock_gitlab_client):
     assert result == "alice"
 
 
-@patch("gibr.trackers.gitlab.gitlab.Gitlab")
+@patch("gitlab.Gitlab")
 def test_get_assignee_no_assignees(mock_gitlab_cls, mock_gitlab_client):
     """_get_assignee should return None when no assignee info exists."""
     mock_gitlab_cls.return_value = mock_gitlab_client
@@ -163,3 +163,13 @@ def test_get_assignee_no_assignees(mock_gitlab_cls, mock_gitlab_client):
     mock_issue.assignee = None
     result = tracker._get_assignee(mock_issue)
     assert result is None
+
+
+@patch.object(GitlabTracker, "import_error", side_effect=SystemExit)
+def test_import_error_called_when_gitlab_missing(mock_import_error):
+    """Should call import_error() when python-gitlab is not installed."""
+    with patch("builtins.__import__", side_effect=ImportError):
+        with pytest.raises(SystemExit):
+            GitlabTracker(url="https://gitlab.com", token="tok", project="group/proj")
+
+    mock_import_error.assert_called_once_with("python-gitlab", "gitlab")

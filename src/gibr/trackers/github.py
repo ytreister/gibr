@@ -1,9 +1,6 @@
 """GitHub issue tracker implementation."""
 
 import click
-from github import Auth, Github
-from github import Issue as GithubIssue
-from github.GithubException import UnknownObjectException
 
 from gibr.issue import Issue
 from gibr.notify import error
@@ -21,6 +18,13 @@ class GithubTracker(IssueTracker):
 
     def __init__(self, repo: str, token: str):
         """Construct GithubTracker object."""
+        try:
+            from github import Auth, Github
+            from github.GithubException import UnknownObjectException
+
+            self.UnknownObjectException = UnknownObjectException
+        except ImportError:
+            self.import_error("PyGithub", "github")
         self.client = Github(auth=Auth.Token(token))
         try:
             self.repo = self.client.get_repo(repo)
@@ -54,7 +58,7 @@ class GithubTracker(IssueTracker):
         Repo               : {config.get("repo")}
         Token              : {config.get("token")}"""
 
-    def _get_assignee(self, issue: GithubIssue):
+    def _get_assignee(self, issue):
         """Get issue assignee."""
         return issue.assignee.login if issue.assignee else None
 
@@ -62,7 +66,7 @@ class GithubTracker(IssueTracker):
         """Fetch issue details by issue number."""
         try:
             issue = self.repo.get_issue(number=int(issue_id))
-        except UnknownObjectException:
+        except self.UnknownObjectException:
             error(f"Issue #{issue_id} not found in repository.")
         return Issue(
             id=issue.number, title=issue.title, assignee=self._get_assignee(issue)

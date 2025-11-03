@@ -4,14 +4,15 @@ This roadmap outlines upcoming features and priorities for the gibr CLI.
 
 ## ✅ Recently Completed
 - [x] Assignee in branch name (#42)
+- [x] Support optional dependencies (#46)
 
 ## 🚧 Planned
-- [ ] Support optional dependencies (#46)
 - [ ] Support for Monday.com issue tracker (#22)
 - [ ] Support for Azure DevOps (#45)
 - [ ] Support for Forgejo (#44)
 - [ ] Support dry run flag (#39)
 - [ ] Issue types derived from labels (#38)
+- [ ] Support a no push to origin flag
 
 ## 🔮 Future
 - [ ] If issue is unassigned, assign to current user
@@ -23,5 +24,4 @@ This roadmap outlines upcoming features and priorities for the gibr CLI.
 
 
 ## 💡 Ideas (Open for Discussion)
-- [ ] Support a no push to origin flag
 - [ ] Allow multiple issue trackers for the same project

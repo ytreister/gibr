@@ -39,10 +39,29 @@ Branch name: ytreister/issue/123/add-support-for-oauth2-login-beta
 
 ## 🚀 Quick start
 ### Installation
+Install the base package
 ```bash
-uv pip install gibr
-# or
 pip install gibr
+```
+or if you use `uv`
+```
+uv pip install gibr
+```
+#### 🧩 Optional dependencies
+`gibr` supports multiple issue trackers, but you only need to install the dependencies for the ones you actually use.
+
+Each tracker’s client library is an optional extra.
+
+| Tracker | Extra name | Install command (can prepend with `uv` if you use it) |
+|---------|------------|------------------------------------------------------ |
+| GitHub  | `github`   | `pip install gibr[github]`                            |
+| GitLab  | `gitlab`   | `pip install gibr[gitlab]`                            |
+| Jira    | `jira`     | `pip install gibr[jira]`                              |
+| Linear  | built-in   | N/A                                                   |
+
+*Note:* You can also install multiple trackers at once, for example: 
+```bash
+pip install gibr[github,jira]
 ```
 ### Initial setup
 Run `gibr init` to set up your configuration interactively. This will create a [`.gibrconfig`](#branch-naming-convention) file in your project root with the correct format for your chosen issue tracker.
