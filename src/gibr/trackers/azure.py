@@ -1,8 +1,6 @@
 """AzureDevOps issue tracker integration."""
 
 import click
-from azure.devops.exceptions import AzureDevOpsClientError
-from azure.devops.v7_1.work_item_tracking import Wiql
 
 from gibr.issue import Issue
 from gibr.notify import error
@@ -21,10 +19,12 @@ class AzureTracker(IssueTracker):
         """Initialize AzureTracker with connection to specified project."""
         try:
             from azure.devops.connection import Connection
-            from msrest.authentication import BasicAuthentication
             from azure.devops.exceptions import AzureDevOpsClientError
+            from azure.devops.v7_1.work_item_tracking import Wiql
+            from msrest.authentication import BasicAuthentication
 
             self.AzureGetError = AzureDevOpsClientError
+            self.Wiql = Wiql
         except ImportError:
             self.import_error("azure-devops", "azure")
 
@@ -49,7 +49,7 @@ class AzureTracker(IssueTracker):
         project = click.prompt("Azure project name (e.g. project)")
         team = click.prompt("Team name for issues (e.g. team)")
         token_var = click.prompt(
-            "Environment variable for your Azure PAT", default="AZURE_PAT"
+            "Environment variable for your Azure Token", default="AZURE_TOKEN"
         )
 
         cls.check_token(token_var)
@@ -62,7 +62,7 @@ class AzureTracker(IssueTracker):
 
     @classmethod
     def from_config(cls, config):
-        """Create AzureDevOpsTracker from config dictionary."""
+        """Create AzureTracker from config dictionary."""
         try:
             url = config["url"]
             token = config["token"]
@@ -90,12 +90,13 @@ class AzureTracker(IssueTracker):
         return None
 
     def get_issue(self, issue_id: str) -> dict:
-        pass
+        """Fetch issue details by issue id."""
         try:
             issue = self.wit_client.get_work_item(int(issue_id))
         except self.AzureGetError:
             error(
-                f"Issue #{issue_id} not found in Azure project {self.project_name} for team {self.team_name}."
+                f"Issue #{issue_id} not found in Azure "
+                f"in the {self.project_name} project for team {self.team_name}."
             )
         return Issue(
             id=issue.id,
@@ -106,15 +107,23 @@ class AzureTracker(IssueTracker):
 
     def list_issues(self) -> list[dict]:
         """List all open issues in the project."""
-        wiql = Wiql(
-            query=f"""
+        wiql = self.Wiql(
+            query=rf"""
             SELECT [System.Id]
             FROM WorkItems
-            WHERE [System.IterationPath] = @CurrentIteration('[{self.project_name}]\{self.team_name}') AND
+            WHERE
+            [System.IterationPath] = @CurrentIteration('
+                [{self.project_name}]\{self.team_name}'
+                ) AND
             [System.TeamProject] = '{self.project_name}' AND
-            ([System.WorkItemType] = 'Product Backlog Item' OR  [System.WorkItemType] = 'Feature' OR
-             [System.WorkItemType] = 'Epic' OR [System.WorkItemType] = 'Task' OR [System.WorkItemType] = 'Bug') AND
-            NOT ([System.State] = 'Done' OR [System.State] = 'Removed' OR [System.State] = 'Closed')
+            ([System.WorkItemType] = 'Product Backlog Item' OR
+             [System.WorkItemType] = 'Feature' OR
+             [System.WorkItemType] = 'Epic' OR
+             [System.WorkItemType] = 'Task' OR
+             [System.WorkItemType] = 'Bug') AND
+            NOT ([System.State] = 'Done' OR
+                 [System.State] = 'Removed' OR
+                 [System.State] = 'Closed')
             ORDER BY [System.ChangedDate] DESC"""
         )
         # We limit number of results to 30 on purpose
