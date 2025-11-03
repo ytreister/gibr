@@ -163,3 +163,13 @@ def test_get_assignee_no_assignees(mock_gitlab_cls, mock_gitlab_client):
     mock_issue.assignee = None
     result = tracker._get_assignee(mock_issue)
     assert result is None
+
+
+@patch.object(GitlabTracker, "import_error", side_effect=SystemExit)
+def test_import_error_called_when_gitlab_missing(mock_import_error):
+    """Should call import_error() when python-gitlab is not installed."""
+    with patch("builtins.__import__", side_effect=ImportError):
+        with pytest.raises(SystemExit):
+            GitlabTracker(url="https://gitlab.com", token="tok", project="group/proj")
+
+    mock_import_error.assert_called_once_with("python-gitlab", "gitlab")

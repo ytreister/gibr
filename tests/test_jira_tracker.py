@@ -319,3 +319,13 @@ def test_get_assignee_variants(
 
     result = tracker._get_assignee(mock_issue)
     assert result == expected
+
+
+@patch.object(JiraTracker, "import_error", side_effect=SystemExit)
+def test_import_error_called_when_jira_missing(mock_import_error):
+    """Should call import_error() when jira is not installed."""
+    with patch("builtins.__import__", side_effect=ImportError):
+        with pytest.raises(SystemExit):
+            JiraTracker(url="url.com", user="user", token="tok")
+
+    mock_import_error.assert_called_once_with("jira", "jira")

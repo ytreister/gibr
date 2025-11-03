@@ -183,3 +183,13 @@ def test_github_configure_interactively(mock_prompt, mock_check_token):
         "repo": "user/repo",
         "token": "${MY_GITHUB_TOKEN}",
     }
+
+
+@patch.object(GithubTracker, "import_error", side_effect=SystemExit)
+def test_import_error_called_when_github_missing(mock_import_error):
+    """Should call import_error() when python-gitlab is not installed."""
+    with patch("builtins.__import__", side_effect=ImportError):
+        with pytest.raises(SystemExit):
+            GithubTracker(repo="user/repo", token="tok")
+
+    mock_import_error.assert_called_once_with("PyGithub", "github")
