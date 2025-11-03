@@ -29,7 +29,7 @@ def mock_jira_client():
     return client
 
 
-@patch("gibr.trackers.jira.JIRA")
+@patch("jira.JIRA")
 def test_from_config_creates_instance(mock_jira_cls, mock_jira_client):
     """from_config should create JiraTracker with correct params."""
     mock_jira_cls.return_value = mock_jira_client
@@ -69,7 +69,7 @@ def test_from_config_raises_valueerror_for_missing_keys(missing_key):
     assert f"Missing key in 'jira' config: {missing_key}" in str(excinfo.value)
 
 
-@patch("gibr.trackers.jira.JIRA")
+@patch("jira.JIRA")
 def test_get_issue_success(mock_jira_cls, mock_jira_client):
     """get_issue should return an Issue with correct fields on success."""
     mock_jira_cls.return_value = mock_jira_client
@@ -85,7 +85,7 @@ def test_get_issue_success(mock_jira_cls, mock_jira_client):
 
 
 @patch("gibr.trackers.jira.error", side_effect=click.Abort)
-@patch("gibr.trackers.jira.JIRA")
+@patch("jira.JIRA")
 def test_get_issue_not_found_with_project(mock_jira_cls, mock_error):
     """If project_key is set, show project-specific error message."""
     mock_client = mock_jira_cls.return_value
@@ -100,7 +100,7 @@ def test_get_issue_not_found_with_project(mock_jira_cls, mock_error):
 
 
 @patch("gibr.trackers.jira.error", side_effect=click.Abort)
-@patch("gibr.trackers.jira.JIRA")
+@patch("jira.JIRA")
 def test_get_issue_invalid_issue_id_provided_when_no_project_key(
     mock_jira_cls, mock_error
 ):
@@ -116,7 +116,7 @@ def test_get_issue_invalid_issue_id_provided_when_no_project_key(
 
 
 @patch("gibr.trackers.jira.error")
-@patch("gibr.trackers.jira.JIRA")
+@patch("jira.JIRA")
 def test_get_issue_not_found_without_project(mock_jira_cls, mock_error):
     """If no project_key is set, show instance-wide error message."""
     mock_error.side_effect = click.Abort
@@ -131,7 +131,7 @@ def test_get_issue_not_found_without_project(mock_jira_cls, mock_error):
     mock_error.assert_called_once_with("Issue PROJ-999 not found in Jira instance.")
 
 
-@patch("gibr.trackers.jira.JIRA")
+@patch("jira.JIRA")
 def test_list_issues_returns_list(mock_jira_cls, mock_jira_client):
     """list_issues should return a list of Issue objects."""
     mock_jira_cls.return_value = mock_jira_client
@@ -146,7 +146,7 @@ def test_list_issues_returns_list(mock_jira_cls, mock_jira_client):
     assert issues[0].title == "Implement feature X"
 
 
-@patch("gibr.trackers.jira.JIRA")
+@patch("jira.JIRA")
 def test_init_success(mock_jira_cls, mock_jira_client):
     """JiraTracker initializes and stores client and project key."""
     mock_jira_cls.return_value = mock_jira_client
@@ -157,7 +157,7 @@ def test_init_success(mock_jira_cls, mock_jira_client):
     assert tracker.project_key == "PROJ"
 
 
-@patch("gibr.trackers.jira.JIRA")
+@patch("jira.JIRA")
 def test_init_raises_valueerror_on_connection_failure(mock_jira_cls):
     """If the JIRA constructor raises JIRAError, JiraTracker should raise ValueError."""
     mock_jira_cls.side_effect = JIRAError(text="auth failed")
@@ -299,7 +299,7 @@ def test_is_jira_project_key(key, expected):
         ({"name": None, "displayName": None, "accountId": None}, None),
     ],
 )
-@patch("gibr.trackers.jira.JIRA")
+@patch("jira.JIRA")
 def test_get_assignee_variants(
     mock_jira_cls, mock_jira_client, assignee_attrs, expected
 ):

@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 
 import click
 
-from gibr.notify import party, warning
+from gibr.notify import error, party, warning
 
 
 class IssueTracker(ABC):
@@ -53,3 +53,16 @@ class IssueTracker(ABC):
         click.echo("You can set it by running:")
         click.echo(f'  export {var_name}="your_token_here"  (macOS/Linux)')
         click.echo(f'  setx {var_name} "your_token_here"     (Windows)\n')
+
+    @classmethod
+    def import_error(cls, dependency, name):
+        """Error notification with details of the import error."""
+        pip_install = f"pip install gibr[{name}]"
+        error(
+            f"{dependency} not installed.\n"
+            "Install optional dependency with:\n"
+            + click.style(f"  {pip_install}", fg="yellow")
+            + "\n(or if you use uv: "
+            + click.style(f"uv {pip_install}", fg="yellow")
+            + ")"
+        )

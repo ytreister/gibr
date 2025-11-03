@@ -5,8 +5,6 @@ import re
 from textwrap import dedent
 
 import click
-from jira import JIRA
-from jira.exceptions import JIRAError
 from slugify import slugify
 
 from gibr.issue import Issue
@@ -22,6 +20,13 @@ class JiraTracker(IssueTracker):
 
     def __init__(self, url: str, user: str, token: str, project_key: str = None):
         """Construct JiraTracker object."""
+        try:
+            from jira import JIRA
+            from jira.exceptions import JIRAError
+
+            self.JIRAError = JIRAError
+        except ImportError:
+            self.import_error("jira", "jira")
         self.project_key = project_key
         try:
             self.client = JIRA(server=url, basic_auth=(user, token))
@@ -137,7 +142,7 @@ class JiraTracker(IssueTracker):
         )
         try:
             issue = self.client.issue(issue_key)
-        except JIRAError:
+        except self.JIRAError:
             if self.project_key:
                 error(
                     f"Issue {issue_key} not found in Jira project {self.project_key}."
