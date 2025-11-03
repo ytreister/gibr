@@ -19,6 +19,7 @@ Currently supporting integration with:
 [![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com)
 [![GitLab](https://img.shields.io/badge/GitLab-330F63?logo=gitlab&logoColor=white)](https://gitlab.com)
 [![Jira](https://img.shields.io/badge/Jira-0052CC?logo=jira&logoColor=white)](https://www.atlassian.com/software/jira)
+[![Azure](https://img.shields.io/badge/Azure-2596BE)](https://dev.azure.com)
 [![Linear](https://img.shields.io/badge/Linear-5E6AD2?logo=linear&logoColor=white)](https://linear.app)
 ## Usage
 ```
@@ -57,6 +58,7 @@ Each tracker’s client library is an optional extra.
 | GitHub  | `github`   | `pip install gibr[github]`                            |
 | GitLab  | `gitlab`   | `pip install gibr[gitlab]`                            |
 | Jira    | `jira`     | `pip install gibr[jira]`                              |
+| Azure   | `azure`    | `pip install gibr[azure]`                             |
 | Linear  | built-in   | N/A                                                   |
 
 *Note:* You can also install multiple trackers at once, for example: 
@@ -81,13 +83,14 @@ $ gibr init
 Welcome to gibr setup! Let’s get you started 🚀
 
 Which issue tracker do you use?
-1. GitHub
-2. GitLab
-3. Jira
-4. Linear
-5. Monday.com (coming soon)
+1. AzureDevOps
+2. GitHub
+3. GitLab
+4. Jira
+5. Linear
+6. Monday.com (coming soon)
 
-Select a number (1, 2, 3, 4, 5) [1]: 1
+Select a number (1, 2, 3, 4, 5, 6) [1]: 2
 
 GitHub selected.
 
