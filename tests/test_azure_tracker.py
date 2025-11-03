@@ -3,11 +3,11 @@
 from unittest.mock import MagicMock, patch
 
 import click
-from gibr.trackers.azure import AzureTracker
 import pytest
 from azure.devops.exceptions import AzureDevOpsClientError
 
 from gibr.issue import Issue
+from gibr.trackers.azure import AzureTracker
 
 
 @pytest.fixture
@@ -127,7 +127,8 @@ def test_get_issue_success(mock_azure_cls, mock_connection, mock_wit_client):
 
     # Verify the issue was formatted correctly
     assert isinstance(issue, Issue)
-    assert issue.id == 42
+    issue_id = 42
+    assert issue.id == issue_id
     assert issue.title == "Fix pipeline bug"
     assert issue.type == "Bug"
     assert issue.assignee == "John Doe"
@@ -154,7 +155,7 @@ def test_get_issue_not_found(
         tracker.get_issue("999")
 
     mock_error.assert_called_once_with(
-        "Issue #999 not found in Azure project MyProject for team MyTeam."
+        "Issue #999 not found in Azure in the MyProject project for team MyTeam."
     )
 
 
@@ -204,19 +205,19 @@ def test_describe_config_returns_expected_format():
 @patch.object(AzureTracker, "check_token")
 @patch(
     "click.prompt",
-    side_effect=["https://dev.azure.com/myorg", "MyProject", "MyTeam", "AZURE_PAT"],
+    side_effect=["https://dev.azure.com/myorg", "MyProject", "MyTeam", "AZURE_TOKEN"],
 )
 def test_azure_configure_interactively(mock_prompt, mock_check_token):
     """Should prompt user for Azure settings and return correct dict."""
     result = AzureTracker.configure_interactively()
     expected_call_count = 4
     assert mock_prompt.call_count == expected_call_count
-    mock_check_token.assert_called_once_with("AZURE_PAT")
+    mock_check_token.assert_called_once_with("AZURE_TOKEN")
     assert result == {
         "url": "https://dev.azure.com/myorg",
         "project": "MyProject",
         "team": "MyTeam",
-        "token": "${AZURE_PAT}",
+        "token": "${AZURE_TOKEN}",
     }
 
 
