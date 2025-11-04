@@ -84,6 +84,7 @@ def test_from_config_creates_instance(
     assert tracker.team_name == "MyTeam"
     assert tracker.wit_client == mock_wit_client
 
+
 @patch("msrest.authentication.BasicAuthentication")
 @patch("azure.devops.connection.Connection")
 def test_init_connection_failure(mock_connection, mock_basic_auth):
@@ -109,6 +110,7 @@ def test_init_connection_failure(mock_connection, mock_basic_auth):
     mock_connection.assert_called_once_with(
         base_url="https://dev.azure.com/myorg", creds=mock_auth_instance
     )
+
 
 @pytest.mark.parametrize("missing_key", ["url", "token", "project", "team"])
 def test_from_config_raises_valueerror_for_missing_keys(missing_key):
