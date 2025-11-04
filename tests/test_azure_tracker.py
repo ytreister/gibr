@@ -84,6 +84,31 @@ def test_from_config_creates_instance(
     assert tracker.team_name == "MyTeam"
     assert tracker.wit_client == mock_wit_client
 
+@patch("msrest.authentication.BasicAuthentication")
+@patch("azure.devops.connection.Connection")
+def test_init_connection_failure(mock_connection, mock_basic_auth):
+    """Test that ValueError is raised when Azure connection fails."""
+    # Setup BasicAuthentication to succeed
+    mock_auth_instance = MagicMock()
+    mock_basic_auth.return_value = mock_auth_instance
+    
+    # Setup Connection to raise an exception
+    mock_connection.side_effect = Exception("Connection timeout")
+    
+    with pytest.raises(ValueError) as excinfo:
+        AzureTracker(
+            url="https://dev.azure.com/myorg",
+            token="secrettoken",
+            project="MyProject",
+            team="MyTeam",
+            closed_states=["Done", "Removed", "Completed"],
+        )
+    
+    assert "Failed to connect to Azure: Connection timeout" in str(excinfo.value)
+    mock_basic_auth.assert_called_once_with("", "secrettoken")
+    mock_connection.assert_called_once_with(
+        base_url="https://dev.azure.com/myorg", creds=mock_auth_instance
+    )
 
 @pytest.mark.parametrize("missing_key", ["url", "token", "project", "team"])
 def test_from_config_raises_valueerror_for_missing_keys(missing_key):
