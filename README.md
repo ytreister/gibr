@@ -19,7 +19,7 @@ Currently supporting integration with:
 [![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com)
 [![GitLab](https://img.shields.io/badge/GitLab-330F63?logo=gitlab&logoColor=white)](https://gitlab.com)
 [![Jira](https://img.shields.io/badge/Jira-0052CC?logo=jira&logoColor=white)](https://www.atlassian.com/software/jira)
-[![Azure DevOps](https://img.shields.io/badge/Azure-269AF2)](https://dev.azure.com)
+[![Azure DevOps](https://img.shields.io/badge/Azure%20DevOps-0078D7?logoColor=white)](https://azure.microsoft.com/services/devops/)
 [![Linear](https://img.shields.io/badge/Linear-5E6AD2?logo=linear&logoColor=white)](https://linear.app)
 ## Usage
 ```
