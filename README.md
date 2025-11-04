@@ -170,6 +170,16 @@ Branch name: FOO-3-subtask-2-1
 ✅  Checked out branch: FOO-3-subtask-2-1
 ✅  Pushed branch 'FOO-3-subtask-2-1' to origin.
 ```
+##### Special case: Azure
+Azure DevOps allows teams to customize their work item states based on their workflow. By default, this integration assumes the following states represent closed/completed work items: 
+  - Done
+  - Removed
+  - Closed
+If your Azure DevOps project uses different state names or a custom workflow, you can configure the closed_states parameter to match your setup. 
+[azure]
+closed_states: ['Done', 'Removed', 'Closed']
+Work items matching any of the configured closed_states will be excluded from the list of active issues.
+
 ### Optional flags
 - `--verbose` — enable debug-level logging for a command
 
