@@ -42,7 +42,7 @@ def init():
     click.echo(f"\n{tracker_cls.display_name} selected.\n")
 
     config = configparser.ConfigParser()
-    config["DEFAULT"] = {"branch_name_format": "{issue}-{title}"}
+    config["DEFAULT"] = {"branch_name_format": "{issue}-{title}", "push": True}
     config["issue-tracker"] = {"name": tracker_key}
     config[tracker_key] = tracker_cls.configure_interactively()
 
