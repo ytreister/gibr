@@ -31,4 +31,6 @@ def create(ctx, issue_number):
     )
     click.echo(f"Generating branch name for issue #{issue.id}: {issue.title}")
     click.echo(f"Branch name: {branch_name}")
-    create_and_push_branch(branch_name)
+    is_push = config.config["DEFAULT"].get("push", "true")
+    is_push = str(is_push).lower() in ("true", "1", "yes", "on")
+    create_and_push_branch(branch_name, is_push)
