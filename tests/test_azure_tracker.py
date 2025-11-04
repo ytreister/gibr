@@ -91,10 +91,10 @@ def test_init_connection_failure(mock_connection, mock_basic_auth):
     # Setup BasicAuthentication to succeed
     mock_auth_instance = MagicMock()
     mock_basic_auth.return_value = mock_auth_instance
-    
+
     # Setup Connection to raise an exception
     mock_connection.side_effect = Exception("Connection timeout")
-    
+
     with pytest.raises(ValueError) as excinfo:
         AzureTracker(
             url="https://dev.azure.com/myorg",
@@ -103,7 +103,7 @@ def test_init_connection_failure(mock_connection, mock_basic_auth):
             team="MyTeam",
             closed_states=["Done", "Removed", "Completed"],
         )
-    
+
     assert "Failed to connect to Azure: Connection timeout" in str(excinfo.value)
     mock_basic_auth.assert_called_once_with("", "secrettoken")
     mock_connection.assert_called_once_with(
