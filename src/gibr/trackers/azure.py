@@ -1,6 +1,7 @@
 """AzureDevOps issue tracker integration."""
 
 import json
+import logging
 
 import click
 
@@ -27,7 +28,7 @@ class AzureTracker(IssueTracker):
             from azure.devops.v7_1.work_item_tracking import Wiql
             from msrest.authentication import BasicAuthentication
 
-            self.AzureGetError = AzureDevOpsClientError
+            self.AzureDevOpsClientError = AzureDevOpsClientError
             self.Wiql = Wiql
         except ImportError:
             self.import_error("azure-devops", "azure")
@@ -121,11 +122,12 @@ class AzureTracker(IssueTracker):
         """Fetch issue details by issue id."""
         try:
             issue = self.wit_client.get_work_item(int(issue_id))
-        except self.AzureGetError:
-            error(
-                f"Issue #{issue_id} not found in Azure "
-                f"in the {self.project_name} project for team {self.team_name}."
-            )
+        except self.AzureDevOpsClientError as e:
+            logging.debug(f"An exception occured when getting a work item {e}")
+            error(f"Issue #{issue_id} was not found")
+        except Exception as e:
+            logging.debug(f"Failed to get issue : {e}")
+            error("Failed to get issue, run again with --verbose flag for more details")
         return Issue(
             id=issue.id,
             title=issue.fields["System.Title"],
@@ -151,25 +153,23 @@ class AzureTracker(IssueTracker):
         )
         try:
             query_result = self.wit_client.query_by_wiql(wiql)
-        except Exception as exception:
+        except Exception as e:
+            logging.debug(f"Failed to get issue ids : {e}")
             error(
-                f"Failed to query Azure issues for project {self.project_name} "
-                f"and team {self.team_name}: {exception}"
+                "Failed to get issues, run again with --verbose flag for more details"
             )
-            return []
 
-        work_items = getattr(query_result, "work_items", None) or []
+        work_items = getattr(query_result, "work_items", None)
         if not work_items:
             return []
 
         try:
             issues = self.wit_client.get_work_items([item.id for item in work_items])
-        except Exception as exc:  # pragma: no cover - external API call
+        except Exception as e:
+            logging.debug(f"Failed to get issues: {e}")
             error(
-                f"Failed to fetch Azure work items for project {self.project_name}: "
-                f"{exc}"
+                "Failed to get issues, run again with --verbose flag for more details"
             )
-            return []
 
         return [
             Issue(
@@ -180,5 +180,3 @@ class AzureTracker(IssueTracker):
             )
             for issue in issues
         ]
-
-        return []

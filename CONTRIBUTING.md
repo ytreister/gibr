@@ -18,7 +18,7 @@ We welcome all kinds of contributions — from bug fixes and documentation to ne
     source .venv/bin/activate  
     # or on Windows
     source .venv\Scripts\activate 
-    uv pip install -e ".[dev,github,gitlab,jira]"
+    uv pip install -e ".[dev,github,gitlab,jira,azure]"
     ````
 1. **Run tests**
     ```bash
