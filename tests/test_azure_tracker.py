@@ -149,6 +149,7 @@ def test_get_issue_not_found(
         token="secrettoken",
         project="MyProject",
         team="MyTeam",
+        closed_states=["Done", "Removed", "Completed"],
     )
 
     with pytest.raises(click.Abort):
@@ -166,20 +167,169 @@ def test_list_issues_returns_list(
 ):
     """Test list_issues returns list of Issue objects."""
     mock_connection_cls.return_value = mock_connection
+
+    # Setup mock to return work items properly
+    mock_wit_client.get_work_items.return_value = [mock_work_item]
+
     tracker = AzureTracker(
-        url="https://dev.azure.com/myorg ",
+        url="https://dev.azure.com/myorg",
         token="secrettoken",
         project="proj",
         team="team",
+        closed_states=["Done", "Removed", "Completed"],
     )
+
     issues = tracker.list_issues()
 
     mock_wit_client.query_by_wiql.assert_called_once()
+    mock_wit_client.get_work_items.assert_called_once_with([42])
+
     assert isinstance(issues, list)
     assert len(issues) == 1
     assert isinstance(issues[0], Issue)
     assert issues[0].title == "Fix pipeline bug"
     assert issues[0].type == "Bug"
+
+
+@patch("azure.devops.connection.Connection")
+@patch("msrest.authentication.BasicAuthentication")
+def test_from_config_with_custom_closed_states(
+    mock_basic_auth, mock_connection, mock_wit_client
+):
+    """from_config should handle custom closed_states configuration."""
+    mock_conn_instance = MagicMock()
+    mock_conn_instance.clients.get_work_item_tracking_client.return_value = (
+        mock_wit_client
+    )
+    mock_connection.return_value = mock_conn_instance
+    mock_auth_instance = MagicMock()
+    mock_basic_auth.return_value = mock_auth_instance
+
+    config = {
+        "url": "https://dev.azure.com/myorg",
+        "token": "secrettoken",
+        "project": "MyProject",
+        "team": "MyTeam",
+        "closed_states": '["Completed", "Archived", "Resolved"]',
+    }
+
+    tracker = AzureTracker.from_config(config)
+
+    assert tracker.closed_states == ["Completed", "Archived", "Resolved"]
+
+
+@patch("azure.devops.connection.Connection")
+@patch("msrest.authentication.BasicAuthentication")
+def test_from_config_with_default_closed_states(
+    mock_basic_auth, mock_connection, mock_wit_client
+):
+    """from_config should use default closed_states when not provided."""
+    mock_conn_instance = MagicMock()
+    mock_conn_instance.clients.get_work_item_tracking_client.return_value = (
+        mock_wit_client
+    )
+    mock_connection.return_value = mock_conn_instance
+    mock_auth_instance = MagicMock()
+    mock_basic_auth.return_value = mock_auth_instance
+
+    config = {
+        "url": "https://dev.azure.com/myorg",
+        "token": "secrettoken",
+        "project": "MyProject",
+        "team": "MyTeam",
+    }
+
+    tracker = AzureTracker.from_config(config)
+
+    assert tracker.closed_states == ["Done", "Removed", "Closed"]
+
+
+def test_from_config_with_invalid_closed_states_json():
+    """from_config should raise ValueError for invalid closed_states JSON."""
+    config = {
+        "url": "https://dev.azure.com/myorg",
+        "token": "secrettoken",
+        "project": "MyProject",
+        "team": "MyTeam",
+        "closed_states": "not a valid json",
+    }
+
+    with pytest.raises(ValueError) as excinfo:
+        AzureTracker.from_config(config)
+
+    assert "Unrecognized list format for closed_states" in str(excinfo.value)
+
+
+@patch("azure.devops.connection.Connection")
+@patch("msrest.authentication.BasicAuthentication")
+def test_build_state_exclusion_with_single_state(
+    mock_auth, mock_connection_cls, mock_connection
+):
+    """_build_state_exclusion should correctly format single closed state."""
+    mock_connection_cls.return_value = mock_connection
+
+    tracker = AzureTracker(
+        url="https://dev.azure.com/myorg",
+        token="secrettoken",
+        project="MyProject",
+        team="MyTeam",
+        closed_states=["Done"],
+    )
+
+    result = tracker._build_state_exclusion()
+
+    assert result == "[System.State] NOT IN ('Done')"
+
+
+@patch("azure.devops.connection.Connection")
+@patch("msrest.authentication.BasicAuthentication")
+def test_build_state_exclusion_with_multiple_states(
+    mock_auth, mock_connection_cls, mock_connection
+):
+    """_build_state_exclusion should correctly format multiple closed states."""
+    mock_connection_cls.return_value = mock_connection
+
+    tracker = AzureTracker(
+        url="https://dev.azure.com/myorg",
+        token="secrettoken",
+        project="MyProject",
+        team="MyTeam",
+        closed_states=["Done", "Removed", "Completed", "Archived"],
+    )
+
+    result = tracker._build_state_exclusion()
+
+    assert (
+        result == "[System.State] NOT IN ('Done', 'Removed', 'Completed', 'Archived')"
+    )
+
+
+@patch("azure.devops.connection.Connection")
+@patch("msrest.authentication.BasicAuthentication")
+def test_list_issues_uses_closed_states_in_query(
+    mock_auth, mock_connection_cls, mock_connection, mock_wit_client, mock_work_item
+):
+    """Test that list_issues uses closed_states in the WIQL query."""
+    mock_connection_cls.return_value = mock_connection
+    mock_wit_client.get_work_items.return_value = [mock_work_item]
+
+    tracker = AzureTracker(
+        url="https://dev.azure.com/myorg",
+        token="secrettoken",
+        project="proj",
+        team="team",
+        closed_states=["Completed", "Archived"],
+    )
+
+    tracker.list_issues()
+
+    # Get the WIQL query that was passed
+    call_args = mock_wit_client.query_by_wiql.call_args
+    wiql_object = call_args[0][0]
+    query = wiql_object.query
+
+    # Verify the query contains the correct state exclusion
+    assert "[System.State] NOT IN ('Completed', 'Archived')" in query
 
 
 def test_describe_config_returns_expected_format():
@@ -189,6 +339,7 @@ def test_describe_config_returns_expected_format():
         "project": "MyProject",
         "team": "MyTeam",
         "token": "secrettoken",
+        "closed_states": '["Completed", "Archived"]',
     }
     result = AzureTracker.describe_config(config)
     assert result.startswith("Azure DevOps:")
@@ -200,6 +351,24 @@ def test_describe_config_returns_expected_format():
     assert "MyProject" in result
     assert "MyTeam" in result
     assert "secrettoken" in result
+    assert "Closed States" in result
+    assert '["Completed", "Archived"]' in result
+
+
+def test_describe_config_with_default_closed_states():
+    """describe_config() should show default closed_states when not provided."""
+    config = {
+        "url": "https://dev.azure.com/myorg",
+        "project": "MyProject",
+        "team": "MyTeam",
+        "token": "secrettoken",
+    }
+
+    result = AzureTracker.describe_config(config)
+
+    assert "Closed States" in result
+    # The describe_config shows the default value
+    assert "Done" in result or '["Done", "Removed", "Closed"]' in str(result)
 
 
 @patch.object(AzureTracker, "check_token")
@@ -221,6 +390,60 @@ def test_azure_configure_interactively(mock_prompt, mock_check_token):
     }
 
 
+@patch("gibr.trackers.azure.error")
+@patch("azure.devops.connection.Connection")
+@patch("msrest.authentication.BasicAuthentication")
+def test_list_issues_handles_empty_results(
+    mock_auth, mock_connection_cls, mock_error, mock_connection, mock_wit_client
+):
+    """Test list_issues returns empty list when no work items found."""
+    mock_connection_cls.return_value = mock_connection
+
+    # Mock empty query result
+    mock_wiql_result = MagicMock()
+    mock_wiql_result.work_items = []
+    mock_wit_client.query_by_wiql.return_value = mock_wiql_result
+
+    tracker = AzureTracker(
+        url="https://dev.azure.com/myorg",
+        token="secrettoken",
+        project="proj",
+        team="team",
+        closed_states=["Done", "Removed", "Completed"],
+    )
+
+    issues = tracker.list_issues()
+
+    assert isinstance(issues, list)
+    assert len(issues) == 0
+    mock_wit_client.get_work_items.assert_not_called()
+
+
+@patch("gibr.trackers.azure.error")
+@patch("azure.devops.connection.Connection")
+@patch("msrest.authentication.BasicAuthentication")
+def test_list_issues_handles_query_exception(
+    mock_auth, mock_connection_cls, mock_error, mock_connection, mock_wit_client
+):
+    """Test list_issues handles exceptions during query execution."""
+    mock_connection_cls.return_value = mock_connection
+    mock_wit_client.query_by_wiql.side_effect = Exception("Query failed")
+
+    tracker = AzureTracker(
+        url="https://dev.azure.com/myorg",
+        token="secrettoken",
+        project="proj",
+        team="team",
+        closed_states=["Done", "Removed", "Completed"],
+    )
+
+    issues = tracker.list_issues()
+
+    assert issues == []
+    mock_error.assert_called_once()
+    assert "Failed to query Azure issues" in str(mock_error.call_args)
+
+
 @patch("azure.devops.connection.Connection")
 @patch("msrest.authentication.BasicAuthentication")
 def test_get_assignee_with_assignee(mock_auth, mock_connection_cls, mock_connection):
@@ -231,6 +454,7 @@ def test_get_assignee_with_assignee(mock_auth, mock_connection_cls, mock_connect
         token="secrettoken",
         project="MyProject",
         team="MyTeam",
+        closed_states=["Done", "Removed", "Completed"],
     )
     mock_issue = MagicMock()
     mock_issue.fields = {"System.AssignedTo": {"displayName": "Bob"}}
@@ -249,6 +473,7 @@ def test_get_assignee_no_assignee(mock_auth, mock_connection_cls, mock_connectio
         token="secrettoken",
         project="MyProject",
         team="MyTeam",
+        closed_states=["Done", "Removed", "Completed"],
     )
     mock_issue = MagicMock()
     mock_issue.fields = {}
@@ -267,6 +492,7 @@ def test_import_error_called_when_azure_missing(mock_import_error):
                 token="secrettoken",
                 project="MyProject",
                 team="MyTeam",
+                closed_states=["Done", "Removed", "Completed"],
             )
 
     mock_import_error.assert_called_once_with("azure-devops", "azure")

@@ -1,5 +1,7 @@
 """AzureDevOps issue tracker integration."""
 
+import json
+
 import click
 
 from gibr.issue import Issue
@@ -15,7 +17,9 @@ from gibr.trackers.base import IssueTracker
 class AzureTracker(IssueTracker):
     """Azure issue tracker using azure-devops."""
 
-    def __init__(self, url: str, token: str, project: str, team: str):
+    def __init__(
+        self, url: str, token: str, project: str, team: str, closed_states: list[str]
+    ):
         """Initialize AzureTracker with connection to specified project."""
         try:
             from azure.devops.connection import Connection
@@ -31,6 +35,7 @@ class AzureTracker(IssueTracker):
         self.url = url
         self.project_name = project
         self.team_name = team
+        self.closed_states = closed_states
         try:
             credentials = BasicAuthentication("", token)
             connection = Connection(base_url=url, creds=credentials)
@@ -68,9 +73,23 @@ class AzureTracker(IssueTracker):
             token = config["token"]
             project = config["project"]
             team = config["team"]
+            closed_states = json.loads(
+                config.get("closed_states", '["Done", "Removed", "Closed"]')
+            )
+        except json.JSONDecodeError:
+            raise ValueError(
+                "Unrecognized list format for closed_states; "
+                "please check the documentation."
+            )
         except KeyError as e:
             raise ValueError(f"Missing key in 'azure' config: {e.args[0]}")
-        return cls(url=url, token=token, project=project, team=team)
+        return cls(
+            url=url,
+            token=token,
+            project=project,
+            team=team,
+            closed_states=closed_states,
+        )
 
     @classmethod
     def describe_config(cls, config: dict) -> str:
@@ -79,7 +98,16 @@ class AzureTracker(IssueTracker):
             URL                : {config.get("url")}
             Project            : {config.get("project")}
             Team               : {config.get("team")}
-            Token              : {config.get("token")}"""
+            Token              : {config.get("token")}
+            Closed States      : {
+            config.get("closed_states", ["Done", "Removed", "Closed"])
+        }"""
+
+    def _build_state_exclusion(self) -> str:
+        """Build the state exclusion clause for WIQL query using NOT IN."""
+        # Ensure closed_states is a list
+        states_list = ", ".join([f"'{state}'" for state in self.closed_states])
+        return f"[System.State] NOT IN ({states_list})"
 
     def _get_assignee(self, issue):
         """Get issue assignee."""
@@ -107,6 +135,8 @@ class AzureTracker(IssueTracker):
 
     def list_issues(self) -> list[dict]:
         """List all open issues in the project."""
+        state_exclusion = self._build_state_exclusion()
+
         wiql = self.Wiql(
             query=rf"""
             SELECT [System.Id]
@@ -116,17 +146,30 @@ class AzureTracker(IssueTracker):
                 '[{self.project_name}]\{self.team_name}'
                 ) AND
             [System.TeamProject] = '{self.project_name}' AND
-            NOT ([System.State] = 'Done' OR
-                 [System.State] = 'Removed' OR
-                 [System.State] = 'Closed')
+            {state_exclusion}
             ORDER BY [System.ChangedDate] DESC"""
         )
-        # We limit number of results to 30 on purpose
-        wiql_results = self.wit_client.query_by_wiql(wiql).work_items
-        if wiql_results:
-            issues = (
-                self.wit_client.get_work_item(int(res.id)) for res in wiql_results
+        try:
+            query_result = self.wit_client.query_by_wiql(wiql)
+        except Exception as exception:
+            error(
+                f"Failed to query Azure issues for project {self.project_name} "
+                f"and team {self.team_name}: {exception}"
             )
+            return []
+
+        work_items = getattr(query_result, "work_items", None) or []
+        if not work_items:
+            return []
+
+        try:
+            issues = self.wit_client.get_work_items([item.id for item in work_items])
+        except Exception as exc:  # pragma: no cover - external API call
+            error(
+                f"Failed to fetch Azure work items for project {self.project_name}: "
+                f"{exc}"
+            )
+            return []
 
         return [
             Issue(
@@ -137,3 +180,5 @@ class AzureTracker(IssueTracker):
             )
             for issue in issues
         ]
+
+        return []
