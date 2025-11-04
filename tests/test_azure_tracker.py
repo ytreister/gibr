@@ -165,7 +165,7 @@ def test_get_issue_success(mock_azure_cls, mock_connection, mock_wit_client):
 @patch("azure.devops.connection.Connection")
 @patch("msrest.authentication.BasicAuthentication")
 def test_get_issue_not_found(
-    mock_auth, mock_connection_cls, mock_error, mock_connection, mock_wit_client
+    _, mock_connection_cls, mock_error, mock_connection, mock_wit_client
 ):
     """Test that click.Abort is raised when issue is not found."""
     mock_error.side_effect = click.Abort
@@ -182,9 +182,7 @@ def test_get_issue_not_found(
     with pytest.raises(click.Abort):
         tracker.get_issue("999")
 
-    mock_error.assert_called_once_with(
-        "Issue #999 not found in Azure in the MyProject project for team MyTeam."
-    )
+    mock_error.assert_called_once_with("Issue #999 was not found")
 
 
 @patch("azure.devops.connection.Connection")
@@ -446,11 +444,11 @@ def test_list_issues_handles_empty_results(
     mock_wit_client.get_work_items.assert_not_called()
 
 
-@patch("gibr.trackers.azure.error")
+@patch("gibr.trackers.azure.error", side_effect=SystemExit)
 @patch("azure.devops.connection.Connection")
 @patch("msrest.authentication.BasicAuthentication")
 def test_list_issues_handles_query_exception(
-    mock_auth, mock_connection_cls, mock_error, mock_connection, mock_wit_client
+    _, mock_connection_cls, mock_error, mock_connection, mock_wit_client
 ):
     """Test list_issues handles exceptions during query execution."""
     mock_connection_cls.return_value = mock_connection
@@ -463,17 +461,19 @@ def test_list_issues_handles_query_exception(
         team="team",
         closed_states=["Done", "Removed", "Completed"],
     )
+    with pytest.raises(SystemExit):
+        tracker.list_issues()
 
-    issues = tracker.list_issues()
-
-    assert issues == []
     mock_error.assert_called_once()
-    assert "Failed to query Azure issues" in str(mock_error.call_args)
+    assert (
+        "Failed to get issues, run again with --verbose flag for more details"
+        in str(mock_error.call_args)
+    )
 
 
 @patch("azure.devops.connection.Connection")
 @patch("msrest.authentication.BasicAuthentication")
-def test_get_assignee_with_assignee(mock_auth, mock_connection_cls, mock_connection):
+def test_get_assignee_with_assignee(_, mock_connection_cls, mock_connection):
     """_get_assignee should return displayName when assignee exists."""
     mock_connection_cls.return_value = mock_connection
     tracker = AzureTracker(
