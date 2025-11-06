@@ -14,7 +14,7 @@
 `gibr` connects your Git workflow to your issue tracker — instantly creating consistent, descriptive branches.
 Fully configurable, and ready for any tracker or team setup.
 
-Currently supporting integration with:  
+Currently supporting integration with:
 
 [![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com)
 [![GitLab](https://img.shields.io/badge/GitLab-330F63?logo=gitlab&logoColor=white)](https://gitlab.com)
@@ -61,10 +61,15 @@ Each tracker’s client library is an optional extra.
 | Azure   | `azure`    | `pip install gibr[azure]`                             |
 | Linear  | built-in   | N/A                                                   |
 
-*Note:* You can also install multiple trackers at once, for example: 
+*Note:* You can also install multiple trackers at once, for example:
 ```bash
 pip install gibr[github,jira]
 ```
+or if you use `uv`
+```
+uv tool install --with github --with jira gibr
+```
+
 ### Initial setup
 Run `gibr init` to set up your configuration interactively. This will create a [`.gibrconfig`](#branch-naming-convention) file in your project root with the correct format for your chosen issue tracker.
 ### Setup git aliases commands (optional)
@@ -131,7 +136,7 @@ gibr --verbose create 123
 git create 123 --verbose
 
 # ❌ wrong: flags after gibr CLI
-gibr create 123 --verbose 
+gibr create 123 --verbose
 
 # ❌ wrong: flags before the alias
 git --verbose create 123
@@ -143,7 +148,7 @@ Run `gibr issues` (or `git issues`) to view open issues in the issue tracker you
 Run `gibr 123` (or `gibr create 123` or `git create 123`) to create a branch for the cooresponding issue number.
 ##### Branch naming convention
 `gibr` uses the `branch_name_format` from your `.gibrconfig` to determine the format for the branch.
-You can use the following placeholders:  
+You can use the following placeholders:
 - `{issuetype}`
 - `{issue}`
 - `{title}`
@@ -171,11 +176,11 @@ Branch name: FOO-3-subtask-2-1
 ✅  Pushed branch 'FOO-3-subtask-2-1' to origin.
 ```
 ##### Special case: Azure
-Azure DevOps allows teams to customize their work item states based on their workflow. By default, this integration assumes the following states represent closed/completed work items: 
+Azure DevOps allows teams to customize their work item states based on their workflow. By default, this integration assumes the following states represent closed/completed work items:
   - Done
   - Removed
   - Closed
-If your Azure DevOps project uses different state names or a custom workflow, you can configure the closed_states parameter to match your setup. 
+If your Azure DevOps project uses different state names or a custom workflow, you can configure the closed_states parameter to match your setup.
 [azure]
 closed_states: ['Done', 'Removed', 'Closed']
 Work items matching any of the configured closed_states will be excluded from the list of active issues.
@@ -190,5 +195,5 @@ See the [Roadmap](ROADMAP.md) for upcoming features and plans.
 See the [Contributing](CONTRIBUTING.md) guidelines if you would like to contribute.
 
 ## 💬 Feedback welcome!
-Found a bug or have a feature request? [Open an issue](https://github.com/ytreister/gibr/issues) or start a discussion.  
+Found a bug or have a feature request? [Open an issue](https://github.com/ytreister/gibr/issues) or start a discussion.
 If you find it useful, consider starring ⭐️ the repo — it really helps visibility!
