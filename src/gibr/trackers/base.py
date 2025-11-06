@@ -57,12 +57,11 @@ class IssueTracker(ABC):
     @classmethod
     def import_error(cls, dependency, name):
         """Error notification with details of the import error."""
-        pip_install = f"pip install gibr[{name}]"
         error(
             f"{dependency} not installed.\n"
             "Install optional dependency with:\n"
-            + click.style(f"  {pip_install}", fg="yellow")
+            + click.style(f"  pip install gibr[{name}]", fg="yellow")
             + "\n(or if you use uv: "
-            + click.style(f"uv {pip_install}", fg="yellow")
+            + click.style(f"uv tool install --with {name} gibr", fg="yellow")
             + ")"
         )

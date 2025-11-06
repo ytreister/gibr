@@ -46,7 +46,7 @@ pip install gibr
 ```
 or if you use `uv`
 ```
-uv pip install gibr
+uv tool install gibr
 ```
 #### 🧩 Optional dependencies
 `gibr` supports multiple issue trackers, but you only need to install the dependencies for the ones you actually use.

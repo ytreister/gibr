@@ -45,4 +45,4 @@ def test_import_error_message(mock_error):
     assert "python-gitlab not installed." in msg
     assert "Install optional dependency with:" in msg
     assert "pip install gibr[gitlab]" in msg
-    assert "uv pip install gibr[gitlab]" in msg
+    assert "uv tool install --with gitlab gibr" in msg
