@@ -21,6 +21,7 @@ Currently supporting integration with:
 [![Jira](https://img.shields.io/badge/Jira-0052CC?logo=jira&logoColor=white)](https://www.atlassian.com/software/jira)
 [![Azure DevOps](https://img.shields.io/badge/Azure%20DevOps-0078D7?logoColor=white)](https://azure.microsoft.com/services/devops/)
 [![Linear](https://img.shields.io/badge/Linear-5E6AD2?logo=linear&logoColor=white)](https://linear.app)
+[![Monday.dev](https://img.shields.io/badge/Monday.dev-00C875?logo=monday&logoColor=white)](https://monday.com)
 ## Usage
 ```
 # List open issues
@@ -53,13 +54,14 @@ uv tool install gibr
 
 Each tracker’s client library is an optional extra.
 
-| Tracker | Extra name | Install command (can prepend with `uv` if you use it) |
-|---------|------------|------------------------------------------------------ |
-| GitHub  | `github`   | `pip install gibr[github]`                            |
-| GitLab  | `gitlab`   | `pip install gibr[gitlab]`                            |
-| Jira    | `jira`     | `pip install gibr[jira]`                              |
-| Azure   | `azure`    | `pip install gibr[azure]`                             |
-| Linear  | built-in   | N/A                                                   |
+| Tracker    | Extra name | Install command (can prepend with `uv` if you use it) |
+|------------|------------|------------------------------------------------------ |
+| GitHub     | `github`   | `pip install gibr[github]`                            |
+| GitLab     | `gitlab`   | `pip install gibr[gitlab]`                            |
+| Jira       | `jira`     | `pip install gibr[jira]`                              |
+| Azure      | `azure`    | `pip install gibr[azure]`                             |
+| Linear     | built-in   | N/A                                                   |
+| Monday.dev | built-in   | N/A                                                   |
 
 *Note:* You can also install multiple trackers at once, for example:
 ```bash
@@ -93,9 +95,11 @@ Which issue tracker do you use?
 3. GitLab
 4. Jira
 5. Linear
-6. Monday.com (coming soon)
+6. Monday.dev
+7. Forgejo (coming soon)
+8. YouTrack (coming soon)
 
-Select a number (1, 2, 3, 4, 5, 6) [1]: 2
+Select a number (1, 2, 3, 4, 5, 6, 7, 8) [1]: 2
 
 GitHub selected.
 
@@ -153,11 +157,16 @@ You can use the following placeholders:
 - `{issue}`
 - `{title}`
 - `{assignee}` (Note: If issue does not have an assignee and your branch name format contains assignee, you will not be able to create the branch)
-##### Special case: Jira
+### Special cases: Jira and Linear
 For Jira, you can specify a `project_key` in your configuration:
 ```ini
 [jira]
 project_key=FOO
+```
+and for linear you can specify a `team`:
+```ini
+[linear]
+team=FOO
 ```
 If you do this, you can choose to either specify the entire issue id or just the numerical portion (i.e. `FOO-123` or `123`
 ```bash
@@ -175,15 +184,17 @@ Branch name: FOO-3-subtask-2-1
 ✅  Checked out branch: FOO-3-subtask-2-1
 ✅  Pushed branch 'FOO-3-subtask-2-1' to origin.
 ```
-##### Special case: Azure
+### Special case: Azure
 Azure DevOps allows teams to customize their work item states based on their workflow. By default, this integration assumes the following states represent closed/completed work items:
   - Done
   - Removed
   - Closed
 If your Azure DevOps project uses different state names or a custom workflow, you can configure the closed_states parameter to match your setup.
+```ini
 [azure]
-closed_states: ['Done', 'Removed', 'Closed']
-Work items matching any of the configured closed_states will be excluded from the list of active issues.
+closed_states=['Done', 'Removed', 'Closed']
+```
+Work items matching any of the configured `closed_states` will be excluded from the list of active issues.
 
 ### Optional flags
 - `--verbose` — enable debug-level logging for a command
