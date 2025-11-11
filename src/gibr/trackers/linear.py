@@ -1,11 +1,9 @@
 """Linear issue tracker implementation."""
 
 import re
-from http import HTTPStatus
 from textwrap import dedent
 
 import click
-import requests
 
 from gibr.issue import Issue
 from gibr.notify import error
@@ -83,23 +81,6 @@ class LinearTracker(IssueTracker):
         return f"""Linear:
         Team Key           : {config.get("team")}
         Token              : {config.get("token")}"""
-
-    def _graphql_request(self, query: str, variables: dict | None = None):
-        """Make a GraphQL request to Linear."""
-        headers = {
-            "Authorization": self.token.replace("${", "").replace("}", ""),
-            "Content-Type": "application/json",
-        }
-        payload = {"query": query}
-        if variables:
-            payload["variables"] = variables
-        response = requests.post(self.API_URL, json=payload, headers=headers)
-        if response.status_code != HTTPStatus.OK:
-            error(f"Linear API request failed: {response.text}")
-        data = response.json()
-        if "errors" in data:
-            error(f"Linear API returned errors: {data['errors']}")
-        return data.get("data", {})
 
     def _get_assignee(self, issue):
         """Get issue assignee."""

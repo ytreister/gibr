@@ -63,7 +63,7 @@ def test_init_jira_creates_config(
         assert "token = ${JIRA_API_TOKEN}" in content
 
 
-@patch("click.prompt", side_effect=["6"])
+@patch("click.prompt", side_effect=["8"])
 @patch("gibr.cli.init.warning")
 def test_init_unsupported_tracker(_mock_warning, _mock_prompt, tmp_path):
     """Should warn and exit for unsupported tracker."""

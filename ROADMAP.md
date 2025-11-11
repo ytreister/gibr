@@ -3,13 +3,11 @@
 This roadmap outlines upcoming features and priorities for the gibr CLI.
 
 ## ✅ Recently Completed
-- [x] Assignee in branch name (#42)
-- [x] Support optional dependencies (#46)
 - [x] Support for Azure DevOps (#45)
 - [x] Support a no push to origin flag (#51)
+- [x] Support for Monday.com (#22)
 
 ## 🧩 Planned new issue tracker plugins
-- [ ] Support for Monday.com (#22)
 - [ ] Support for Forgejo (#44)
 - [ ] Support for YouTrack (#50)
 

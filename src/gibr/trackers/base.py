@@ -2,8 +2,10 @@
 
 import os
 from abc import ABC, abstractmethod
+from http import HTTPStatus
 
 import click
+import requests
 
 from gibr.notify import error, party, warning
 
@@ -65,3 +67,20 @@ class IssueTracker(ABC):
             + click.style(f"uv tool install --with {name} gibr", fg="yellow")
             + ")"
         )
+
+    def _graphql_request(self, query: str, variables: dict | None = None):
+        """Make a GraphQL request."""
+        headers = {
+            "Authorization": self.token.replace("${", "").replace("}", ""),
+            "Content-Type": "application/json",
+        }
+        payload = {"query": query}
+        if variables:
+            payload["variables"] = variables
+        response = requests.post(self.API_URL, json=payload, headers=headers)
+        if response.status_code != HTTPStatus.OK:
+            error(f"{self.display_name} API request failed: {response.text}")
+        data = response.json()
+        if "errors" in data:
+            error(f"{self.display_name} API returned errors: {data['errors']}")
+        return data.get("data", {})
