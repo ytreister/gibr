@@ -1,7 +1,11 @@
 """Tests for IssueTracker base class."""
 
 import os
-from unittest.mock import patch
+from http import HTTPStatus
+from unittest.mock import MagicMock, patch
+
+import click
+import pytest
 
 from gibr.trackers.base import IssueTracker
 
@@ -9,7 +13,27 @@ from gibr.trackers.base import IssueTracker
 class DummyTracker(IssueTracker):
     """Dummy tracker for testing."""
 
+    token = "token"
     display_name = "Dummy"
+    API_URL = "api.com/"
+
+    def list_issues(self):
+        """Stub."""
+
+    def get_issue(self):
+        """Stub."""
+
+    def _get_assignee(self):
+        """Stub."""
+
+
+def make_response(status=HTTPStatus.OK, json_data=None):
+    """Create a mock response object."""
+    mock_resp = MagicMock()
+    mock_resp.status_code = status
+    mock_resp.json.return_value = json_data or {}
+    mock_resp.text = "mocked response"
+    return mock_resp
 
 
 @patch("gibr.trackers.base.party")
@@ -46,3 +70,36 @@ def test_import_error_message(mock_error):
     assert "Install optional dependency with:" in msg
     assert "pip install gibr[gitlab]" in msg
     assert "uv tool install --with gitlab gibr" in msg
+
+
+@patch("gibr.trackers.base.error", side_effect=click.Abort)
+@patch("gibr.trackers.base.requests.post")
+def test_graphql_request_non_200_triggers_error(mock_post, mock_error):
+    """_graphql_request should call error() if status != 200."""
+    tracker = DummyTracker()
+    mock_post.return_value = make_response(status=HTTPStatus.BAD_REQUEST)
+
+    with pytest.raises(click.Abort):
+        tracker._graphql_request("query")
+
+    mock_error.assert_called_once()
+    assert "Dummy API request failed" in mock_error.call_args[0][0]
+
+
+@patch("gibr.trackers.base.error", side_effect=click.Abort)
+@patch("gibr.trackers.base.requests.post")
+def test_graphql_request_handles_graphql_errors(mock_post, mock_error):
+    """_graphql_request should call error() if response contains GraphQL 'errors'."""
+    tracker = DummyTracker()
+
+    mock_post.return_value = MagicMock(
+        status_code=HTTPStatus.OK,
+        json=lambda: {"errors": [{"message": "Some GraphQL failure"}]},
+        text="mocked text",
+    )
+
+    with pytest.raises(click.Abort):
+        tracker._graphql_request("query { something }")
+
+    mock_error.assert_called_once()
+    assert "Some GraphQL failure" in str(mock_error.call_args[0][0])

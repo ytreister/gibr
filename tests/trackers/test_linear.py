@@ -13,7 +13,7 @@ from gibr.trackers.linear import LinearTracker
 @pytest.fixture
 def mock_post():
     """Fixture to mock requests.post."""
-    with patch("gibr.trackers.linear.requests.post") as mock_post:
+    with patch("gibr.trackers.base.requests.post") as mock_post:
         yield mock_post
 
 
@@ -44,7 +44,7 @@ def test_from_config_raises_valueerror_for_missing_keys(missing_key):
     assert f"Missing key in 'linear' config: {missing_key}" in str(excinfo.value)
 
 
-@patch("gibr.trackers.linear.requests.post")
+@patch("gibr.trackers.base.requests.post")
 def test_get_issue_success(mock_post):
     """get_issue should return Issue object when Linear returns valid data."""
     tracker = LinearTracker(token="t", team="ENG")
@@ -73,7 +73,7 @@ def test_get_issue_success(mock_post):
 
 
 @patch("gibr.trackers.linear.error", side_effect=click.Abort)
-@patch("gibr.trackers.linear.requests.post")
+@patch("gibr.trackers.base.requests.post")
 def test_get_issue_not_found_triggers_error(mock_post, mock_error):
     """Should call error() if issue not found."""
     tracker = LinearTracker(token="t", team="ENG")
@@ -181,7 +181,7 @@ def test_get_issue_without_team_and_numeric_id_triggers_error(mock_error):
     assert "Invalid issue id provided" in mock_error.call_args[0][0]
 
 
-@patch("gibr.trackers.linear.requests.post")
+@patch("gibr.trackers.base.requests.post")
 def test_list_issues_returns_list(mock_post):
     """list_issues should return list of Issue objects."""
     tracker = LinearTracker(token="t", team="ENG")
@@ -210,39 +210,6 @@ def test_list_issues_returns_list(mock_post):
     assert issue.title == "Do something"
     assert issue.type == "issue"
     mock_post.assert_called_once()
-
-
-@patch("gibr.trackers.linear.error", side_effect=click.Abort)
-@patch("gibr.trackers.linear.requests.post")
-def test_graphql_request_non_200_triggers_error(mock_post, mock_error):
-    """_graphql_request should call error() if status != 200."""
-    tracker = LinearTracker(token="t")
-    mock_post.return_value = make_response(status=HTTPStatus.BAD_REQUEST)
-
-    with pytest.raises(click.Abort):
-        tracker._graphql_request("query")
-
-    mock_error.assert_called_once()
-    assert "Linear API request failed" in mock_error.call_args[0][0]
-
-
-@patch("gibr.trackers.linear.error", side_effect=click.Abort)
-@patch("gibr.trackers.linear.requests.post")
-def test_graphql_request_handles_graphql_errors(mock_post, mock_error):
-    """_graphql_request should call error() if response contains GraphQL 'errors'."""
-    tracker = LinearTracker(token="t", team="ENG")
-
-    mock_post.return_value = MagicMock(
-        status_code=HTTPStatus.OK,
-        json=lambda: {"errors": [{"message": "Some GraphQL failure"}]},
-        text="mocked text",
-    )
-
-    with pytest.raises(click.Abort):
-        tracker._graphql_request("query { something }")
-
-    mock_error.assert_called_once()
-    assert "Some GraphQL failure" in str(mock_error.call_args[0][0])
 
 
 @patch.object(
