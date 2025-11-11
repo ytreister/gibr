@@ -109,8 +109,8 @@ def test_describe_config_returns_expected_format():
 def test_configure_interactively(mock_prompt, mock_check_token):
     """Should prompt for board_id and token and return correct config."""
     result = MondayTracker.configure_interactively()
-
-    assert mock_prompt.call_count == 2
+    expected_count = 2
+    assert mock_prompt.call_count == expected_count
     mock_check_token.assert_called_once_with("MONDAY_TOKEN")
     assert result == {"board_id": "123", "token": "${MONDAY_TOKEN}"}
 
