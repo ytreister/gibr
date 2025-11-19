@@ -3,7 +3,7 @@
 import logging
 
 import click
-from git import GitCommandError, Repo
+from git import GitCommandError, InvalidGitRepositoryError, Repo
 
 from gibr.notify import error, info, success, warning
 
@@ -11,7 +11,7 @@ from gibr.notify import error, info, success, warning
 def create_and_push_branch(branch_name: str, is_push: str = True) -> None:
     """Create a new branch and push it to origin."""
     try:
-        repo = Repo(".")
+        repo = Repo(".", search_parent_directories=True)
         if repo.is_dirty(untracked_files=False):
             warning("Working tree is dirty — uncommitted changes present.")
 
@@ -66,5 +66,7 @@ def create_and_push_branch(branch_name: str, is_push: str = True) -> None:
             success(f"Pushed branch '{branch_name}' to origin.")
         repo.close()
 
+    except InvalidGitRepositoryError:
+        error("Not a git repository (or any of the parent directories).")
     except GitCommandError as e:
         error(f"Git command failed: {e}")
