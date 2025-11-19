@@ -77,6 +77,15 @@ uv tool install --with github --with jira gibr
 
 ### Initial setup
 Run `gibr init` to set up your configuration interactively. This will create a [`.gibrconfig`](#branch-naming-convention) file in your project root with the correct format for your chosen issue tracker.
+#### .gibrconfig defaults
+Your `.gibrconfig` will be generated with defaults for `branch_name_format` and `push`.  You can set `push = False` if you do not want to push your branch to origin by default.  You can modify the branch name format as well, see [Branch naming convention](#branch-naming-convention).
+
+Defaults:
+```ini
+[DEFAULT]
+branch_name_format = {issue}-{title}
+push = True
+```
 ### Setup git aliases commands (optional)
 Run `gibr alias` to set up git alias commands for your conveinence. This essentially allows you to extend the `git` CLI with `gibr` commands. See [alias command](#alias) for more details
 
