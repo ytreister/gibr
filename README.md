@@ -22,6 +22,8 @@ Currently supporting integration with:
 [![Azure DevOps](https://img.shields.io/badge/Azure%20DevOps-0078D7?logoColor=white)](https://azure.microsoft.com/services/devops/)
 [![Linear](https://img.shields.io/badge/Linear-5E6AD2?logo=linear&logoColor=white)](https://linear.app)
 [![Monday.dev](https://img.shields.io/badge/Monday.dev-00C875?logo=monday&logoColor=white)](https://monday.com)
+[![YouTrack](https://img.shields.io/badge/YouTrack-1F1F1F?logo=jetbrains&logoColor=white)](https://www.jetbrains.com/youtrack/)
+
 ## Usage
 ```
 # List open issues
@@ -62,6 +64,7 @@ Each tracker’s client library is an optional extra.
 | Azure      | `azure`    | `pip install gibr[azure]`                             |
 | Linear     | built-in   | N/A                                                   |
 | Monday.dev | built-in   | N/A                                                   |
+| YouTrack   | built-in   | N/A                                                   |
 
 *Note:* You can also install multiple trackers at once, for example:
 ```bash
@@ -96,8 +99,8 @@ Which issue tracker do you use?
 4. Jira
 5. Linear
 6. Monday.dev
-7. Forgejo (coming soon)
-8. YouTrack (coming soon)
+7. YouTrack
+8. Forgejo (coming soon)
 
 Select a number (1, 2, 3, 4, 5, 6, 7, 8) [1]: 2
 
@@ -157,11 +160,16 @@ You can use the following placeholders:
 - `{issue}`
 - `{title}`
 - `{assignee}` (Note: If issue does not have an assignee and your branch name format contains assignee, you will not be able to create the branch)
-### Special cases: Jira and Linear
+### Special cases: Jira, Linear and YouTrack
 For Jira, you can specify a `project_key` in your configuration:
 ```ini
 [jira]
 project_key=FOO
+```
+For YouTrack, you can specify a `project` in your configuration:
+```ini
+[youtrack]
+project=FOO
 ```
 and for linear you can specify a `team`:
 ```ini

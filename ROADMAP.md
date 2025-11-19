@@ -3,13 +3,11 @@
 This roadmap outlines upcoming features and priorities for the gibr CLI.
 
 ## ✅ Recently Completed
-- [x] Support for Azure DevOps (#45)
-- [x] Support a no push to origin flag (#51)
 - [x] Support for Monday.com (#22)
+- [x] Support for YouTrack (#50)
 
 ## 🧩 Planned new issue tracker plugins
 - [ ] Support for Forgejo (#44)
-- [ ] Support for YouTrack (#50)
 
 ## 🚧 Planned features
 - [ ] Support dry run flag (#39)

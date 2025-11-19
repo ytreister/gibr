@@ -181,3 +181,58 @@ def test_configure_interactively(mock_prompt, mock_check_token):
         "project": "PROJ",
         "token": "${YOUTRACK_TOKEN}",
     }
+
+
+@pytest.mark.parametrize(
+    "method,field_name",
+    [
+        ("_get_custom_field_value", "Type"),
+        ("_get_custom_field_value", "Assignee"),
+        ("_get_assignee", None),
+        ("_get_type", None),
+    ],
+)
+def test_missing_fields_return_none(method, field_name):
+    """Test that missing fields return None."""
+    tracker = YouTrackTracker(url="https://yt", token="tok")
+    issue = {"customFields": []}
+
+    func = getattr(tracker, method)
+
+    if field_name is None:
+        assert func(issue) is None
+    else:
+        assert func(issue, field_name) is None
+
+
+@patch("gibr.trackers.youtrack.error", side_effect=click.Abort)
+def test_get_issue_numeric_without_project_calls_error(mock_error):
+    """Numeric issue id without project should call error()."""
+    tracker = YouTrackTracker(url="https://yt", token="tok", project=None)
+    with pytest.raises(click.Abort):
+        tracker.get_issue("123")
+    mock_error.assert_called_once()
+    assert "numeric issue id" in mock_error.call_args[0][0].lower()
+
+
+@patch(
+    "gibr.trackers.youtrack.requests.get",
+    return_value=make_response(
+        fields=[
+            {
+                "idReadable": "PROJ-123",
+                "summary": "Num issue",
+                "assignee": "dave",
+                "issue_type": "Task",
+            }
+        ]
+    ),
+)
+def test_get_issue_numeric_with_project_success(_):
+    """Numeric issue id should expand to PROJECT-id and succeed."""
+    tracker = YouTrackTracker(url="https://yt", token="tok", project="PROJ")
+    issue = tracker.get_issue("123")
+    assert issue.id == "PROJ-123"
+    assert issue.title == "Num issue"
+    assert issue.assignee == "dave"
+    assert issue.type == "Task"
