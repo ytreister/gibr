@@ -64,7 +64,7 @@ def test_init_jira_creates_config(
 
 
 @patch("click.prompt", side_effect=["8"])
-@patch("gibr.cli.init.warning")
+@patch("gibr.cli.init.notify.warning")
 def test_init_unsupported_tracker(_mock_warning, _mock_prompt, tmp_path):
     """Should warn and exit for unsupported tracker."""
     runner = CliRunner()
@@ -85,7 +85,7 @@ def test_init_unsupported_tracker(_mock_warning, _mock_prompt, tmp_path):
         "token": "${GITHUB_TOKEN}",
     },
 )
-@patch("gibr.cli.init.warning")
+@patch("gibr.cli.init.notify.warning")
 def test_init_overwrite_decline(
     _mock_warning, _mock_configure, _mock_confirm, _mock_prompt, tmp_path
 ):
