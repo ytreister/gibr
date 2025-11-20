@@ -6,6 +6,7 @@ from http import HTTPStatus
 
 import click
 import requests
+from dotenv import load_dotenv
 
 from gibr.notify import error, party, warning
 
@@ -46,6 +47,7 @@ class IssueTracker(ABC):
     @classmethod
     def check_token(cls, var_name: str) -> str:
         """Check if a token exists in env or prompt to create it."""
+        load_dotenv(override=False)
         token = os.getenv(var_name)
         if token:
             party(f"Found {cls.display_name} token in environment ({var_name})")
@@ -54,7 +56,8 @@ class IssueTracker(ABC):
         warning(f"No {cls.display_name} token found in environment ({var_name}).")
         click.echo("You can set it by running:")
         click.echo(f'  export {var_name}="your_token_here"  (macOS/Linux)')
-        click.echo(f'  setx {var_name} "your_token_here"     (Windows)\n')
+        click.echo(f'  setx {var_name} "your_token_here"     (Windows)')
+        click.echo('or you can set it in a ".env" file in your project directory.\n')
 
     @classmethod
     def import_error(cls, dependency, name):

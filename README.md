@@ -5,7 +5,6 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/gibr.svg)](https://pypi.org/project/gibr/)
 [![License](https://img.shields.io/github/license/ytreister/gibr.svg)](https://github.com/ytreister/gibr/blob/main/LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/ytreister/gibr.svg)](https://github.com/ytreister/gibr/stargazers)
-[![GitHub issues](https://img.shields.io/github/issues/ytreister/gibr.svg)](https://github.com/ytreister/gibr/issues)
 
 
 # gibr
@@ -26,13 +25,14 @@ Currently supporting integration with:
 
 ## Usage
 ```
-# List open issues
+# 1️⃣ List open issues
 $ gibr issues
 |   Issue | Type   | Title                                 | Assignee   |
 |---------|--------|---------------------------------------|------------|
 |     123 | issue  | Add support for OAuth2 / login (beta) | ytreister  |
 |      97 | issue  | Add support for gitlab                |            |
-# Decide which issue to work
+
+# 2️⃣ Decide which issue to work
 $ gibr 123
 Generating branch name for issue #123: Add support for OAuth2 / login (beta)
 Branch name: ytreister/issue/123/add-support-for-oauth2-login-beta
@@ -56,15 +56,15 @@ uv tool install gibr
 
 Each tracker’s client library is an optional extra.
 
-| Tracker    | Extra name | Install command (can prepend with `uv` if you use it) |
-|------------|------------|------------------------------------------------------ |
-| GitHub     | `github`   | `pip install gibr[github]`                            |
-| GitLab     | `gitlab`   | `pip install gibr[gitlab]`                            |
-| Jira       | `jira`     | `pip install gibr[jira]`                              |
-| Azure      | `azure`    | `pip install gibr[azure]`                             |
-| Linear     | built-in   | N/A                                                   |
-| Monday.dev | built-in   | N/A                                                   |
-| YouTrack   | built-in   | N/A                                                   |
+| Tracker    | Extra name | Install command                                                    |
+|------------|------------|------------------------------------------------------------------- |
+| GitHub     | `github`   | `pip install gibr[github]` or `uv tool install --with github gibr` |
+| GitLab     | `gitlab`   | `pip install gibr[gitlab]` or `uv tool install --with gitlab gibr` |
+| Jira       | `jira`     | `pip install gibr[jira]` or `uv tool install --with jira gibr`     |
+| Azure      | `azure`    | `pip install gibr[azure]` or `uv tool install --with azure gibr`   |
+| Linear     | built-in   | N/A                                                                |
+| Monday.dev | built-in   | N/A                                                                |
+| YouTrack   | built-in   | N/A                                                                |
 
 *Note:* You can also install multiple trackers at once, for example:
 ```bash
@@ -121,7 +121,12 @@ Environment variable for your GitHub token [GITHUB_TOKEN]:
 .gibrconfig already exists. Overwrite? [y/N]: y
 ✅  Created .gibrconfig with GitHub settings
 You're all set! Try: `gibr issues`
+
+ℹ️  Customize your `.gibrconfig`:
+  - Customize branch name format: set `branch_name_format` (default: "{issue}-{title}")
+  - Disable automatic push: set `push = False` to prevent pushing
 ```
+💡Note: `.gibrconfig` will expand envionmental variables, and you can define your variables in a `.env`.
 
 #### alias
 `gibr` includes a built-in helper that writes git aliases into your global
