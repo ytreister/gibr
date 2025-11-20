@@ -5,6 +5,8 @@ from configparser import BasicInterpolation, ConfigParser
 from os import path
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 from gibr.registry import get_tracker_class
 
 
@@ -79,6 +81,13 @@ class GibrConfig:
             raise FileNotFoundError(
                 f"{self.CONFIG_FILENAME} not found in this or any parent directory"
             )
+
+        loaded_dotenv = load_dotenv(
+            dotenv_path=config_file.parent / ".env", override=False
+        )
+        if loaded_dotenv:
+            logging.debug(".env loaded.")
+
         parser = ConfigParser(interpolation=EnvInterpolation())
         parser.read(config_file)
         self.config_file = config_file
