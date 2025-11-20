@@ -44,6 +44,22 @@ class IssueTracker(ABC):
         """Create tracker instance from config dictionary (override in subclasses)."""
         raise NotImplementedError
 
+    def get_labels(self):
+        """Return list of labels from the issue tracker."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} does not implement get_labels()"
+        )
+
+    def resolve_issue_type(self, labels: list[str]) -> str | None:
+        """Return canonical issue type based on config mapping."""
+        mapping = self.config.get("issue_type_mapping", {})
+        labels = {lbl.lower().strip() for lbl in labels}
+        for canonical, aliases in mapping.items():
+            for ali in aliases:
+                if ali.lower().strip() in labels:
+                    return canonical
+        return None
+
     @classmethod
     def check_token(cls, var_name: str) -> str:
         """Check if a token exists in env or prompt to create it."""

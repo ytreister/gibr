@@ -7,9 +7,11 @@ wheels/
 *.egg-info
 .coverage
 coverage.xml
+.env
 
 # Virtual environments
 .venv
+venv_test_gibr
 
 # Gibr specific
 .gibrconfig

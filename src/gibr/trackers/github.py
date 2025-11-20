@@ -12,6 +12,7 @@ from .base import IssueTracker
 @register_tracker(
     key="github",
     display_name="GitHub",
+    issue_types_supported=True,
 )
 class GithubTracker(IssueTracker):
     """GitHub issue tracker using PyGithub."""
@@ -57,6 +58,11 @@ class GithubTracker(IssueTracker):
         return f"""Github:
         Repo               : {config.get("repo")}
         Token              : {config.get("token")}"""
+
+    def get_labels(self):
+        """Return list of labels from the GitHub repository."""
+        labels = self.repo.get_labels()
+        return [label.name for label in labels]
 
     def _get_assignee(self, issue):
         """Get issue assignee."""
