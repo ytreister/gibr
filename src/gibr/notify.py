@@ -1,6 +1,13 @@
 """Utility functions for displaying notifications in the CLI using Click."""
 
+import sys
+
 import click
+
+
+def safe_echo(text):
+    """Echo text safely, handling encoding issues."""
+    return sys.stdout.buffer.write(text.encode("utf-8") + b"\n")
 
 
 def info(msg):

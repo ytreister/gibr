@@ -145,9 +145,8 @@ git create 123
 The above command is equivalent to using the CLI as follows: `gibr 123` or
 `gibr create 123`.
 
-##### Flag order
-
-The flag order when using the `git` alias version is different:
+##### Global flag order
+When using the alias version of the commands, the global flags (`--verbose`) must appear after the command.  This is a limitation of the `git` aliases.
 
 ```bash
 # ✅ gibr CLI (flags before)
@@ -165,6 +164,20 @@ git --verbose create 123
 
 #### issues
 Run `gibr issues` (or `git issues`) to view open issues in the issue tracker you have configured
+##### JSON format
+You can pass in a flag to change output format to JSON:
+```
+$gibr issues --json
+[
+    {
+        "id": "FOO-314",
+        "title": "establish a large-limit API key",
+        "assignee": "ngoldman",
+        "type": "issue"
+    },
+    ...
+]
+```
 #### create
 Run `gibr 123` (or `gibr create 123` or `git create 123`) to create a branch for the cooresponding issue number.
 ##### Branch naming convention

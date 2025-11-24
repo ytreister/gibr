@@ -4,6 +4,8 @@ import click
 
 from gibr.trackers.jira import JiraTracker
 
+GLOBAL_FLAGS = ["--verbose"]
+
 
 class GibrGroup(click.Group):
     """Custom Click group."""
@@ -11,12 +13,13 @@ class GibrGroup(click.Group):
     def parse_args(self, ctx, args):
         """Parse args to handle 'git' alias routing and default command (create)."""
         # If 'git' alias is present, handle it
+
         if args and args[0] == "git":
             args.pop(0)
 
-            # Move all flags (starting with '--') to the front
-            flags = [a for a in args if a.startswith("--")]
-            rest = [a for a in args if not a.startswith("--")]
+            # Move global flags to the front
+            flags = [a for a in args if a in GLOBAL_FLAGS]
+            rest = [a for a in args if a not in GLOBAL_FLAGS]
             args[:] = flags + rest
 
         # Treat numeric as 'create' (gibr 123 -> gibr create 123)

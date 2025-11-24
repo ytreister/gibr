@@ -10,6 +10,10 @@ coverage.xml
 
 # Virtual environments
 .venv
+venv_test_gibr
 
 # Gibr specific
 .gibrconfig
+
+# Environment variables
+.env
