@@ -1,6 +1,7 @@
 """CLI command to list open issues from the tracker."""
 
 import json
+import sys
 from dataclasses import asdict
 
 import click
@@ -29,8 +30,10 @@ def issues(ctx, output_json: bool):
     if output_json:
         click.echo(json.dumps([asdict(issue) for issue in issues], indent=4))
     else:
-        safe_echo(
-            tabulate(
-                table, headers=["Issue", "Type", "Title", "Assignee"], tablefmt="github"
-            ),
+        output = tabulate(
+            table, headers=["Issue", "Type", "Title", "Assignee"], tablefmt="github"
         )
+        if sys.stdout.isatty():
+            click.echo_via_pager(output)
+        else:
+            safe_echo(output)
