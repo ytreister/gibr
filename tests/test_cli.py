@@ -1,11 +1,13 @@
 """Integration tests for the gibr CLI commands."""
 
+import json
 import os
 from unittest.mock import MagicMock, patch
 
 from click.testing import CliRunner
 
 from gibr.cli import cli
+from gibr.issue import Issue
 
 
 @patch("gibr.cli.get_tracker", return_value=MagicMock())
@@ -169,3 +171,66 @@ def test_init_command_skips_config_loading(
 
     # Verify the debug message was logged
     mock_debug.assert_any_call("Skipping config loading for init command.")
+
+
+@patch("gibr.cli.issues.warning")
+@patch("gibr.cli.issues.safe_echo")
+@patch("gibr.cli.get_tracker")
+def test_issues_command_outputs_table(mock_get_tracker, mock_safe_echo, mock_warning):
+    """Ensure `gibr issues` prints a table when issues exist."""
+    runner = CliRunner()
+
+    # Fake issues
+    issue1 = Issue(id=1, type="bug", title="Bad bug", assignee="alice")
+    issue2 = Issue(id=2, type="task", title="Do work", assignee="bob")
+
+    tracker = mock_get_tracker.return_value
+    tracker.list_issues.return_value = [issue1, issue2]
+
+    result = runner.invoke(cli, ["issues"])
+
+    assert result.exit_code == 0
+    mock_warning.assert_not_called()
+    mock_safe_echo.assert_called_once()  # table output
+
+
+@patch("gibr.cli.issues.click.echo")
+@patch("gibr.cli.get_tracker")
+def test_issues_command_outputs_json(mock_get_tracker, mock_echo):
+    """Ensure --json prints JSON output with asdict()."""
+    runner = CliRunner()
+
+    issue = Issue(id=10, type="bug", title="Bug", assignee="me")
+    tracker = mock_get_tracker.return_value
+    tracker.list_issues.return_value = [issue]
+
+    result = runner.invoke(cli, ["issues", "--json"])
+
+    assert result.exit_code == 0
+
+    # Validate JSON payload
+    sent_json = mock_echo.call_args[0][0]
+    data = json.loads(sent_json)
+
+    assert data == [
+        {
+            "id": 10,
+            "type": "bug",
+            "title": "Bug",
+            "assignee": "me",
+        }
+    ]
+
+
+@patch("gibr.cli.issues.warning")
+@patch("gibr.cli.get_tracker")
+def test_issues_command_no_issues(mock_get_tracker, mock_warning):
+    """When no issues exist, warning should be displayed."""
+    runner = CliRunner()
+
+    tracker = mock_get_tracker.return_value
+    tracker.list_issues.return_value = []
+
+    runner.invoke(cli, ["issues"])
+
+    mock_warning.assert_called_once_with("No open issues found.")
