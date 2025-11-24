@@ -1,0 +1,65 @@
+"""Tests for the 'issues' CLI command."""
+
+import json
+from unittest.mock import patch
+
+from click.testing import CliRunner
+
+from gibr.cli import cli
+from gibr.issue import Issue
+
+
+@patch("gibr.cli.issues.warning")
+@patch("gibr.cli.get_tracker")
+def test_issues_no_issues(mock_get_tracker, mock_warning):
+    """Test that when there are no issues, a warning is shown."""
+    runner = CliRunner()
+
+    tracker = mock_get_tracker.return_value
+    tracker.list_issues.return_value = []
+
+    result = runner.invoke(cli, ["issues"])
+
+    assert result.exit_code == 0
+    mock_warning.assert_called_once_with("No open issues found.")
+
+
+@patch("gibr.cli.issues.sys.stdout")
+@patch("gibr.cli.issues.safe_echo")
+@patch("gibr.cli.get_tracker")
+def test_issues_outputs_table(mock_get_tracker, mock_safe_echo, mock_stdout):
+    """Test that issues are output in table format using safe_echo."""
+    runner = CliRunner()
+
+    mock_stdout.isatty.return_value = False  # triggers safe_echo path
+
+    issue1 = Issue(id=1, type="bug", title="Bug A", assignee="alice")
+    issue2 = Issue(id=2, type="task", title="Task B", assignee="bob")
+
+    tracker = mock_get_tracker.return_value
+    tracker.list_issues.return_value = [issue1, issue2]
+
+    result = runner.invoke(cli, ["issues"])
+
+    assert result.exit_code == 0
+    mock_safe_echo.assert_called_once()
+
+
+@patch("gibr.cli.issues.click.echo")
+@patch("gibr.cli.get_tracker")
+def test_issues_outputs_json(mock_get_tracker, mock_echo):
+    """Test that issues are output in JSON format when --json is used."""
+    runner = CliRunner()
+
+    issue = Issue(id=10, type="bug", title="Bug", assignee="me")
+    tracker = mock_get_tracker.return_value
+    tracker.list_issues.return_value = [issue]
+
+    result = runner.invoke(cli, ["issues", "--json"])
+
+    assert result.exit_code == 0
+
+    sent_json = mock_echo.call_args[0][0]
+    parsed = json.loads(sent_json)
+
+    assert parsed == [{"id": 10, "type": "bug", "title": "Bug", "assignee": "me"}]
