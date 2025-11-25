@@ -1,7 +1,6 @@
 """CLI command to list open issues from the tracker."""
 
 import json
-import sys
 from dataclasses import asdict
 
 import click
