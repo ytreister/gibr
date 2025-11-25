@@ -122,7 +122,7 @@ class YouTrackTracker(IssueTracker):
         params = {
             "fields": self.FIELDS,
             "query": query,
-            "$top": 50,
+            "$top": 500,
         }
         url = f"{self.url}/api/issues"
         resp = requests.get(url, headers=self._headers(), params=params)
