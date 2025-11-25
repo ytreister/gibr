@@ -30,10 +30,8 @@ def issues(ctx, output_json: bool):
     if output_json:
         click.echo(json.dumps([asdict(issue) for issue in issues], indent=4))
     else:
-        output = tabulate(
-            table, headers=["Issue", "Type", "Title", "Assignee"], tablefmt="github"
+        safe_echo(
+            tabulate(
+                table, headers=["Issue", "Type", "Title", "Assignee"], tablefmt="github"
+            )
         )
-        if sys.stdout.isatty():
-            click.echo_via_pager(output)
-        else:
-            safe_echo(output)
