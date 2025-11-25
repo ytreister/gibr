@@ -34,10 +34,9 @@ def test_issues_no_issues(mock_get_tracker, mock_warning, _):
 
 
 @patch("gibr.cli.GibrConfig", return_value=make_mock_config())
-@patch("gibr.cli.issues.sys.stdout")
 @patch("gibr.cli.issues.safe_echo")
 @patch("gibr.cli.get_tracker")
-def test_issues_outputs_table(mock_get_tracker, mock_safe_echo, mock_stdout, _):
+def test_issues_outputs_table(mock_get_tracker, mock_safe_echo, _):
     """Test that issues are output in table format using safe_echo."""
     runner = CliRunner()
 
