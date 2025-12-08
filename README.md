@@ -58,17 +58,17 @@ Each tracker’s client library is an optional extra.
 
 | Tracker    | Extra name | Install command                                                    |
 |------------|------------|------------------------------------------------------------------- |
-| GitHub     | `github`   | `pip install gibr[github]` or `uv tool install --with github gibr` |
-| GitLab     | `gitlab`   | `pip install gibr[gitlab]` or `uv tool install --with gitlab gibr` |
-| Jira       | `jira`     | `pip install gibr[jira]` or `uv tool install --with jira gibr`     |
-| Azure      | `azure`    | `pip install gibr[azure]` or `uv tool install --with azure gibr`   |
+| GitHub     | `github`   | `pip install "gibr[github]"` or `uv tool install --with github gibr` |
+| GitLab     | `gitlab`   | `pip install "gibr[gitlab]"` or `uv tool install --with gitlab gibr` |
+| Jira       | `jira`     | `pip install "gibr[jira]"` or `uv tool install --with jira gibr`     |
+| Azure      | `azure`    | `pip install "gibr[azure]"` or `uv tool install --with azure gibr`   |
 | Linear     | built-in   | N/A                                                                |
 | Monday.dev | built-in   | N/A                                                                |
 | YouTrack   | built-in   | N/A                                                                |
 
 *Note:* You can also install multiple trackers at once, for example:
 ```bash
-pip install gibr[github,jira]
+pip install "gibr[github,jira]"
 ```
 or if you use `uv`
 ```

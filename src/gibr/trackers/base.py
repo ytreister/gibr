@@ -65,7 +65,7 @@ class IssueTracker(ABC):
         error(
             f"{dependency} not installed.\n"
             "Install optional dependency with:\n"
-            + click.style(f"  pip install gibr[{name}]", fg="yellow")
+            + click.style(f'  pip install "gibr[{name}]"', fg="yellow")
             + "\n(or if you use uv: "
             + click.style(f"uv tool install --with {name} gibr", fg="yellow")
             + ")"

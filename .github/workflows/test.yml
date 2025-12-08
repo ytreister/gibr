@@ -12,7 +12,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: pip install .[github,gitlab,jira,azure,dev]
+      - run: pip install ".[github,gitlab,jira,azure,dev]"
       - run: pytest
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
