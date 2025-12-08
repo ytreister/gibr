@@ -162,7 +162,7 @@ class JiraTracker(IssueTracker):
         jql = (
             f'project = "{self.project_key}" AND ' if self.project_key else ""
         ) + "statusCategory != Done ORDER BY created DESC"
-        issues = self.client.search_issues(jql)
+        issues = self.client.search_issues(jql, maxResults=500)
         return [
             Issue(
                 id=issue.key,
