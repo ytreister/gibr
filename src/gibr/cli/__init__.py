@@ -13,6 +13,7 @@ from .alias import alias
 from .create import create
 from .group import GibrGroup
 from .init import init
+from .issue_types import issue_types
 from .issues import issues
 
 
@@ -47,3 +48,4 @@ cli.add_command(create)
 cli.add_command(issues)
 cli.add_command(alias)
 cli.add_command(init)
+cli.add_command(issue_types)
