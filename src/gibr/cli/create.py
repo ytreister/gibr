@@ -9,8 +9,15 @@ from gibr.notify import error
 
 @click.command("create")
 @click.argument("issue_number")
+@click.option(
+    "--dry-run",
+    "dry_run",
+    is_flag=True,
+    default=False,
+    help="Show what would happen without creating or pushing the branch.",
+)
 @click.pass_context
-def create(ctx, issue_number):
+def create(ctx, issue_number, dry_run):
     """Generate a branch based on the issue number provided."""
     config = ctx.obj["config"]
     tracker = ctx.obj["tracker"]
@@ -33,4 +40,4 @@ def create(ctx, issue_number):
     click.echo(f"Branch name: {branch_name}")
     is_push = config.config["DEFAULT"].get("push", "true")
     is_push = str(is_push).lower() in ("true", "1", "yes", "on")
-    create_and_push_branch(branch_name, is_push)
+    create_and_push_branch(branch_name, is_push, dry_run)

@@ -10,7 +10,7 @@ This roadmap outlines upcoming features and priorities for the gibr CLI.
 - [ ] Support for Forgejo (#44)
 
 ## 🚧 Planned features
-- [ ] Support dry run flag (#39)
+- [x] Support dry run flag (#39)
 - [ ] Issue types derived from labels (#38)
 
 ## 🔮 Future
